@@ -68,7 +68,7 @@ docker compose up --build -d --wait  # Rebuild and start
 
 ## API Endpoints
 
-The existing `/api/gemini/*` routes use `gemma-4-26b-a4b-it` by default through the Gemini API. Set `GOOGLE_API_KEY` in `.env`. The server runs locally; model inference is hosted by Google. You can still override `model` in requests.
+The existing `/api/gemini/*` routes use `gemma-4-26b-a4b-it` by default through the Gemini API. Set `GOOGLE_API_KEY` in `.env`. The server runs locally; model inference is hosted by Google. You can still override `model` in requests; model IDs are forwarded unchanged, including in chat. The server sends the key upstream in the `x-goog-api-key` header, not in the URL. Generation and chat return HTTP 401 before contacting Google if the key is missing.
 
 
 ### 1. Gemini — Text Generation (Gemini / Gemma)

@@ -106,7 +106,9 @@ def _generated_text(data: dict) -> str:
     parts = (candidates[0].get("content") or {}).get("parts") or []
     return "".join(
         part["text"] for part in parts
-        if isinstance(part.get("text"), str) and not part.get("thought", False)
+        if isinstance(part, dict)
+        and isinstance(part.get("text"), str)
+        and not part.get("thought", False)
     )
 
 

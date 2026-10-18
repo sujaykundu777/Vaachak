@@ -151,7 +151,7 @@ curl http://localhost:8000/health
 
 Generate text from a single prompt using a Gemini / Gemma model.
 
-- **Auth:** `GOOGLE_API_KEY` (otherwise `401`)
+- **Auth:** `GOOGLE_API_KEY` (otherwise `401`); sent upstream in the `x-goog-api-key` header, never in the URL.
 - **Content type:** `application/json`
 - **Upstream:** `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`
 
@@ -189,9 +189,9 @@ curl -X POST http://localhost:8000/api/gemini/generateContent \
 
 ### POST /api/gemini/chat
 
-Conversational chat that accepts full message history.
+Conversational chat that accepts full message history. The `model` field is forwarded unchanged to the upstream model path; no prefix is added or rewritten.
 
-- **Auth:** `GOOGLE_API_KEY` (otherwise `401`)
+- **Auth:** `GOOGLE_API_KEY` (otherwise `401`); sent upstream in the `x-goog-api-key` header, never in the URL.
 - **Content type:** `application/json`
 
 **Request body** (`ChatRequest`)
