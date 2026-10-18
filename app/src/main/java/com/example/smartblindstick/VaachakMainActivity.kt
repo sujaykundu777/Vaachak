@@ -204,6 +204,9 @@ open class VaachakMainActivity : ComponentActivity(), TextToSpeech.OnInitListene
                                     onMicClick = {
                                         tts.stop()
                                         voiceAssistantManager.startListening()
+                                    },
+                                    onModeChanged = { mode ->
+                                        speak("Switched to ${mode.title}. Using ${mode.modelName}.", isHighPriority = true)
                                     }
                                 )
 

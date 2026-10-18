@@ -27,6 +27,18 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import java.util.concurrent.ExecutorService
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Surface
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+
 /**
  * ============================================================================
  * LAUNCHER ENTRY POINT
@@ -37,17 +49,246 @@ import java.util.concurrent.ExecutorService
  */
 open class MainActivity : VaachakMainActivity()
 
+/**
+ * AI Inference Modes for the Surroundings Screen:
+ * - ONLINE: Uses NVIDIA Llama 3.2 Vision Instruct 11B (API key in .env)
+ * - OFFLINE: Uses Gemma 4 E2B IT (downloaded on-device)
+ */
+enum class AiInferenceMode(
+    val title: String,
+    val modelName: String,
+    val description: String,
+    val isOnline: Boolean
+) {
+    ONLINE(
+        title = "Online Mode",
+        modelName = "Llama 3.2 Vision Instruct 11B",
+        description = "Uses Llama 3.2 API key provided in .env",
+        isOnline = true
+    ),
+    OFFLINE(
+        title = "Offline Mode",
+        modelName = "Gemma 4 E2B IT",
+        description = "Uses Gemma 4 E2B IT model downloaded on-device",
+        isOnline = false
+    )
+}
+
+/**
+ * Dropdown bar positioned at the top of the Surroundings screen to toggle
+ * between Online Mode (Llama 3.2 API key) and Offline Mode (Gemma 4 on-device).
+ */
+@Composable
+fun SurroundingModeDropdownBar(
+    currentMode: AiInferenceMode,
+    onModeSelected: (AiInferenceMode) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        Surface(
+            shape = RoundedCornerShape(18.dp),
+            color = Color(0xEE111827),
+            shadowElevation = 8.dp,
+            border = androidx.compose.foundation.BorderStroke(
+                width = 2.dp,
+                color = if (currentMode.isOnline) Color(0xFF00E676) else Color(0xFF38BDF8)
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    // Status glow indicator
+                    Box(
+                        modifier = Modifier
+                            .size(14.dp)
+                            .clip(CircleShape)
+                            .background(if (currentMode.isOnline) Color(0xFF00E676) else Color(0xFF38BDF8))
+                    )
+
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = currentMode.title,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+
+                            // Chip badge
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(
+                                        if (currentMode.isOnline) Color(0xFF064E3B) else Color(0xFF0C4A6E)
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = if (currentMode.isOnline) "Cloud API" else "On-Device",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = if (currentMode.isOnline) Color(0xFF6EE7B7) else Color(0xFF7DD3FC)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        Text(
+                            text = if (currentMode.isOnline)
+                                "Llama 3.2 Vision 11B (API key in .env)"
+                            else
+                                "Gemma 4 E2B IT (Downloaded On-Device)",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF94A3B8)
+                        )
+                    }
+                }
+
+                // Dropdown Caret Icon
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF1E293B)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(modifier = Modifier.size(12.dp)) {
+                        val path = androidx.compose.ui.graphics.Path().apply {
+                            if (expanded) {
+                                moveTo(0f, size.height)
+                                lineTo(size.width / 2f, 0f)
+                                lineTo(size.width, size.height)
+                            } else {
+                                moveTo(0f, 0f)
+                                lineTo(size.width / 2f, size.height)
+                                lineTo(size.width, 0f)
+                            }
+                            close()
+                        }
+                        drawPath(path, color = Color.White)
+                    }
+                }
+            }
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .background(Color(0xFF0F172A))
+                .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(16.dp))
+        ) {
+            AiInferenceMode.values().forEach { mode ->
+                val isSelected = currentMode == mode
+                DropdownMenuItem(
+                    text = {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(10.dp)
+                                            .clip(CircleShape)
+                                            .background(if (mode.isOnline) Color(0xFF00E676) else Color(0xFF38BDF8))
+                                    )
+                                    Text(
+                                        text = mode.title,
+                                        fontSize = 15.sp,
+                                        fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+                                        color = if (isSelected) Color.White else Color(0xFFCBD5E1)
+                                    )
+                                }
+
+                                if (isSelected) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(Color(0xFF064E3B))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = "ACTIVE",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = Color(0xFF6EE7B7)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = "Model: ${mode.modelName}",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (mode.isOnline) Color(0xFF86EFAC) else Color(0xFF93C5FD)
+                            )
+
+                            Text(
+                                text = mode.description,
+                                fontSize = 12.sp,
+                                color = Color(0xFF94A3B8)
+                            )
+                        }
+                    },
+                    onClick = {
+                        expanded = false
+                        onModeSelected(mode)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(if (isSelected) Color(0xFF1E293B) else Color.Transparent)
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun MainScreen(
     cameraExecutor: ExecutorService,
     visionProcessor: VisionProcessor,
     onAnalyzeImage: (androidx.camera.core.ImageProxy) -> Unit,
     onCameraBound: (Camera) -> Unit,
-    onMicClick: () -> Unit
+    onMicClick: () -> Unit,
+    onModeChanged: ((AiInferenceMode) -> Unit)? = null
 ) {
     var lensFacing by remember { mutableIntStateOf(CameraSelector.LENS_FACING_BACK) }
     var currentDetections by remember { mutableStateOf<List<Detection>>(emptyList()) }
     var imageDimensions by remember { mutableStateOf(Pair(1, 1)) }
+    var selectedAiMode by remember { mutableStateOf(AiInferenceMode.ONLINE) }
     
     DisposableEffect(visionProcessor) {
         visionProcessor.onDetectionsUpdated = { detections, width, height ->
@@ -59,7 +300,12 @@ fun MainScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        // Camera Preview Feed
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -68,60 +314,90 @@ fun MainScreen(
                 .clickable { onMicClick() }
         ) {
             CameraPreviewFeed(
-            cameraExecutor = cameraExecutor,
-            onAnalyzeImage = onAnalyzeImage,
-            onCameraBound = onCameraBound,
-            lensFacing = lensFacing,
-            modifier = Modifier.fillMaxSize()
+                cameraExecutor = cameraExecutor,
+                onAnalyzeImage = onAnalyzeImage,
+                onCameraBound = onCameraBound,
+                lensFacing = lensFacing,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val scaleX = size.width / imageDimensions.first.toFloat()
+                val scaleY = size.height / imageDimensions.second.toFloat()
+                
+                val paint = android.graphics.Paint().apply {
+                    color = android.graphics.Color.GREEN
+                    textSize = 60f
+                    isFakeBoldText = true
+                }
+                
+                for (det in currentDetections) {
+                    val left = det.boundingBox.left * scaleX
+                    val top = det.boundingBox.top * scaleY
+                    val right = det.boundingBox.right * scaleX
+                    val bottom = det.boundingBox.bottom * scaleY
+                    
+                    drawRect(
+                        color = Color.Green,
+                        topLeft = Offset(left, top),
+                        size = Size(right - left, bottom - top),
+                        style = Stroke(width = 8f)
+                    )
+                    
+                    drawContext.canvas.nativeCanvas.drawText(
+                        det.label, left, top - 10f, paint
+                    )
+                }
+            }
+        }
+
+        // TOP: Accessible Drop Down Bar to switch between Online and Offline modes
+        SurroundingModeDropdownBar(
+            currentMode = selectedAiMode,
+            onModeSelected = { newMode ->
+                selectedAiMode = newMode
+                onModeChanged?.invoke(newMode)
+            },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp)
         )
 
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val scaleX = size.width / imageDimensions.first.toFloat()
-            val scaleY = size.height / imageDimensions.second.toFloat()
-            
-            val paint = android.graphics.Paint().apply {
-                color = android.graphics.Color.GREEN
-                textSize = 60f
-                isFakeBoldText = true
-            }
-            
-            for (det in currentDetections) {
-                val left = det.boundingBox.left * scaleX
-                val top = det.boundingBox.top * scaleY
-                val right = det.boundingBox.right * scaleX
-                val bottom = det.boundingBox.bottom * scaleY
-                
-                drawRect(
-                    color = Color.Green,
-                    topLeft = Offset(left, top),
-                    size = Size(right - left, bottom - top),
-                    style = Stroke(width = 8f)
-                )
-                
-                drawContext.canvas.nativeCanvas.drawText(
-                    det.label, left, top - 10f, paint
-                )
-            }
-        }
-        }
-
+        // BOTTOM: Large accessible buttons for Surroundings view
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 76.dp),
+                .padding(bottom = 80.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Button(onClick = onMicClick) {
-                Text("Tap to Speak")
+            Button(
+                onClick = onMicClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF00E676),
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.height(52.dp)
+            ) {
+                Text("Tap to Speak", fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
-            Button(onClick = {
-                lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
-                    CameraSelector.LENS_FACING_FRONT
-                } else {
-                    CameraSelector.LENS_FACING_BACK
-                }
-            }) {
-                Text("Flip Camera")
+            Button(
+                onClick = {
+                    lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
+                        CameraSelector.LENS_FACING_FRONT
+                    } else {
+                        CameraSelector.LENS_FACING_BACK
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF27272A),
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.height(52.dp)
+            ) {
+                Text("Flip Camera", fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
         }
     }
