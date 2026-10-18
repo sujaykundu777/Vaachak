@@ -173,11 +173,21 @@ async def chat(messages: ChatRequest) -> ApiResponse:
 #  SARVAM AUDIO ENDPOINTS
 # ===================================================================
 
-SARVAM_STT_URL = "https://v1.sarvam.ai/transcribe"
+SARVAM_STT_URL = "https://api.sarvam.ai/speech-to-text"
+
+
+def _stt_form_data(model: str, source_language: str) -> dict[str, str]:
+    # Keep the public API's short language codes and "auto" compatible.
+    language = source_language.strip()
+    if language.lower() in {"auto", "unknown"}:
+        language = "unknown"
+    elif "-" not in language:
+        language = f"{language.lower()}-IN"
+    return {"model": model, "language_code": language}
 
 
 @app.post("/api/sarvam/transcribe", response_model=SarvamTranscribeResponse)
-async def transcribe_audio(file: UploadFile = File(...), model: str = "sarvam-2b-v1-low", source_language: str = "auto") -> SarvamTranscribeResponse:
+async def transcribe_audio(file: UploadFile = File(...), model: str = "saaras:v3", source_language: str = "auto") -> SarvamTranscribeResponse:
     """Speech-to-text: converts uploaded audio (MP3 / WAV) to text via Sarvam."""
     if not SARVAM_API_KEY:
         raise HTTPException(401, "SARVAM_API_KEY not set in environment")
@@ -192,7 +202,7 @@ async def transcribe_audio(file: UploadFile = File(...), model: str = "sarvam-2b
         tmp.write(content)
         tmp_path = tmp.name
 
-    headers = {"API-Key": SARVAM_API_KEY, "Accept": "application/json"}
+    headers = {"api-subscription-key": SARVAM_API_KEY, "Accept": "application/json"}
     files = {"file": (file.filename or "upload.audio", content, file.content_type or "application/octet-stream")}
 
     try:
@@ -201,15 +211,14 @@ async def transcribe_audio(file: UploadFile = File(...), model: str = "sarvam-2b
                 SARVAM_STT_URL,
                 headers=headers,
                 files=files,
-                data={"model": model, "source_language": source_language,
-                      "remove_punctuation_diacritics": "false"},
+                data=_stt_form_data(model, source_language),
             )
 
         if resp.status_code != 200:
             return SarvamTranscribeResponse(status="error", error=resp.text)
 
         json_data = resp.json()
-        final_text: str = json_data.get("final_text", "")
+        final_text: str = json_data["transcript"]
         segments = json_data.get("segments", [])
 
         return SarvamTranscribeResponse(
@@ -256,7 +265,7 @@ async def text_to_speech(req: SarvamTTSRequest) -> ApiResponse:
 class VoiceFirstRequest(BaseModel):
     """Multi-part: audio + prompt for Gemini processing."""
     model: str = "gemini-2.0-flash"
-    sarvam_model: str = "sarvam-2b-v1-low"
+    sarvam_model: str = "saaras:v3"
     source_language: str = "auto"
     system_prompt: Optional[str] = None
 
@@ -288,7 +297,7 @@ async def voice_first(
         tmp.write(content)
         tmp_path = tmp.name
 
-    stt_headers = {"API-Key": SARVAM_API_KEY, "Accept": "application/json"}
+    stt_headers = {"api-subscription-key": SARVAM_API_KEY, "Accept": "application/json"}
     stt_files = {"file": (audio_file.filename or "voice.audio", content, audio_file.content_type or "application/octet-stream")}
 
     final_text: str = ""
@@ -298,17 +307,13 @@ async def voice_first(
                 SARVAM_STT_URL,
                 headers=stt_headers,
                 files=stt_files,
-                data={
-                    "model": req.sarvam_model,
-                    "source_language": req.source_language,
-                    "remove_punctuation_diacritics": "false",
-                },
+                data=_stt_form_data(req.sarvam_model, req.source_language),
             )
 
         if stt_resp.status_code != 200:
             raise HTTPException(422, f"STT failed: {stt_resp.text}")
 
-        final_text = stt_resp.json().get("final_text", "")
+        final_text = stt_resp.json()["transcript"]
 
     finally:
         Path(tmp_path).unlink(missing_ok=True)

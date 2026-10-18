@@ -87,15 +87,17 @@ Upload audio → get transcribed text back. Works with MP3 and WAV files.
 | Field              | Type   | Required | Default     | Description           |
 |--------------------|--------|----------|-------------|-----------------------|
 | `file`             | file   | yes      | —          | Audio file (MP3 / WAV) |
-| `model`            | string | no       | `sarvam-2b-v1-low` | Sarvam model to use     |
-| `source_language`  | string | no       | `auto`     | Language code (`hi`, `en`, etc.) |
+| `model`            | string | no       | `saaras:v3` | Sarvam model to use     |
+| `source_language`  | string | no       | `auto`     | Language code (`hi-IN`, `en-IN`); short codes also accepted |
 
 **Request:**
 ```bash
-curl -X POST "http://localhost:8000/api/sarvam/transcribe?model=sarvam-2b-v1-low&source_language=en" \
+curl -X POST "http://localhost:8000/api/sarvam/transcribe?model=saaras:v3&source_language=en" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@./my_audio.mp3;type=audio/mpeg"
 ```
+
+STT uses Sarvam’s `/speech-to-text` endpoint with `api-subscription-key` authentication. `source_language=auto` maps to Sarvam’s `language_code=unknown`; short codes such as `en` map to `en-IN`. The provider’s `transcript` is returned as `text` by this server.
 
 Sarvam supports Indian languages: Hindi, Bengali, Tamil, Telugu, Marathi, Urdu, Gujarati, Malayalam, Kannada, Odia, Punjabi, Assamese, Sanskrit, Maithili, Nepali, and English.
 
@@ -134,7 +136,7 @@ Perfect for the Vaachak reading companion — upload voice input and get a smart
 |------------------------|--------|----------|----------------------|---------------------------|
 | `audio_file`           | file   | yes      | —                   | Voice recording (MP3/WAV)  |
 | `model`                | string | no       | `gemini-2.0-flash`  | Gemini LLM model           |
-| `sarvam_model`         | string | no       | `sarvam-2b-v1-low`  | Sarvam STT model           |
+| `sarvam_model`         | string | no       | `saaras:v3`  | Sarvam STT model           |
 | `source_language`      | string | no       | `auto`              | Source language for STT     |
 | `system_prompt`        | string | no       | Vaachak default     | Custom system instruction   |
 
