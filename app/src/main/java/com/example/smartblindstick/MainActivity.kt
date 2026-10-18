@@ -51,8 +51,8 @@ open class MainActivity : VaachakMainActivity()
 
 /**
  * AI Inference Modes for the Surroundings Screen:
- * - ONLINE: Uses NVIDIA Llama 3.2 Vision Instruct 11B (API key in .env)
- * - OFFLINE: Uses Gemma 4 E2B IT (downloaded on-device)
+ * - ONLINE: Uses Vaachak Render API (provider credentials stay on the server)
+ * - OFFLINE: Uses the bundled YOLO detector and ML Kit OCR
  */
 enum class AiInferenceMode(
     val title: String,
@@ -62,21 +62,21 @@ enum class AiInferenceMode(
 ) {
     ONLINE(
         title = "Online Mode",
-        modelName = "Llama 3.2 Vision Instruct 11B",
-        description = "Uses Llama 3.2 API key provided in .env",
+        modelName = "Gemma via Vaachak",
+        description = "Uses the Vaachak cloud API on Render",
         isOnline = true
     ),
     OFFLINE(
         title = "Offline Mode",
-        modelName = "Gemma 4 E2B IT",
-        description = "Uses Gemma 4 E2B IT model downloaded on-device",
+        modelName = "YOLO and ML Kit",
+        description = "On-device detection and text reading; cloud descriptions disabled",
         isOnline = false
     )
 }
 
 /**
  * Dropdown bar positioned at the top of the Surroundings screen to toggle
- * between Online Mode (Llama 3.2 API key) and Offline Mode (Gemma 4 on-device).
+ * between cloud descriptions and on-device detection.
  */
 @Composable
 fun SurroundingModeDropdownBar(
@@ -153,9 +153,9 @@ fun SurroundingModeDropdownBar(
 
                         Text(
                             text = if (currentMode.isOnline)
-                                "Llama 3.2 Vision 11B (API key in .env)"
+                                "Gemma via Vaachak Render API"
                             else
-                                "Gemma 4 E2B IT (Downloaded On-Device)",
+                                "YOLO detection + ML Kit text reading",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF94A3B8)
@@ -283,12 +283,12 @@ fun MainScreen(
     onAnalyzeImage: (androidx.camera.core.ImageProxy) -> Unit,
     onCameraBound: (Camera) -> Unit,
     onMicClick: () -> Unit,
+    selectedAiMode: AiInferenceMode = AiInferenceMode.ONLINE,
     onModeChanged: ((AiInferenceMode) -> Unit)? = null
 ) {
     var lensFacing by remember { mutableIntStateOf(CameraSelector.LENS_FACING_BACK) }
     var currentDetections by remember { mutableStateOf<List<Detection>>(emptyList()) }
     var imageDimensions by remember { mutableStateOf(Pair(1, 1)) }
-    var selectedAiMode by remember { mutableStateOf(AiInferenceMode.ONLINE) }
     
     DisposableEffect(visionProcessor) {
         visionProcessor.onDetectionsUpdated = { detections, width, height ->
@@ -355,7 +355,6 @@ fun MainScreen(
         SurroundingModeDropdownBar(
             currentMode = selectedAiMode,
             onModeSelected = { newMode ->
-                selectedAiMode = newMode
                 onModeChanged?.invoke(newMode)
             },
             modifier = Modifier

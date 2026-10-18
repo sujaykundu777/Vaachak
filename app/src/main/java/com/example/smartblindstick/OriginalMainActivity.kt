@@ -210,7 +210,7 @@ class OriginalMainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                 val prompt = command.replace("ask nvidia", "").replace("nvidia", "").trim()
                 nvidiaPrompt = if (prompt.isEmpty()) "Describe what you see in front of me." else prompt
                 isNvidiaRequested = true
-                speak("Asking Nvidia...", isHighPriority = true)
+                speak("Asking Vaachak...", isHighPriority = true)
             }
             command.contains("go to") || command.contains("navigate to") -> {
                 val destination = command.replace("go to", "").replace("navigate to", "").trim()
