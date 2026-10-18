@@ -1,5 +1,7 @@
 # Vaachak
 
+As part of Hacktoberfest 2026 x Kraftcrowd Hackathon we are building a Offline first Web App + Android App that uses open source gemma models locally
+
 ### Track 1 
 
 Track 1 : Best use of Gemma Model
@@ -26,5 +28,24 @@ We are building
 #### Vaachak - An offline reading companion for elders with weak eyesight
 
 
+### Usage of Gemma 
+
+Resources:
+
+Gemma 4 Resources
+[General hub and documentation overview.](https://mlh.link/gemma)
+
+
+
+Gemma Quickstart
+[Getting started guide and rapid API setup](https://mlh.link/gemma-quickstart)
+
+
+Gemma API Docs
+[Endpoint specifications and API references](https://mlh.link/gemma-docs)
+
+
+Gemma Beginner Guide
+[Step-by-step introduction for new developers](https://mlh.link/gemma-beginnerguide)
 
 
