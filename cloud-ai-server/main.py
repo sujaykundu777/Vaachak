@@ -41,9 +41,12 @@ GOOGLE_API_KEY: Optional[str] = settings.GOOGLE_API_KEY
 SARVAM_API_KEY: Optional[str] = settings.SARVAM_API_KEY
 
 
+DEFAULT_GEMINI_MODEL = "gemma-4-26b-a4b-it"
+
+
 class GeminiRequest(BaseModel):
     prompt: str
-    model: str = "gemini-2.0-flash"
+    model: str = DEFAULT_GEMINI_MODEL
 
 
 class ChatMessage(BaseModel):
@@ -53,7 +56,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
-    model: str = "gemini-2.0-flash"
+    model: str = DEFAULT_GEMINI_MODEL
 
 
 class SarvamTranscribeResponse(BaseModel):
@@ -95,6 +98,17 @@ app = FastAPI(
 #  GEMINI ENDPOINTS
 # ===================================================================
 
+def _generated_text(data: dict) -> str:
+    candidates = data.get("candidates") or []
+    if not candidates:
+        return ""
+    parts = (candidates[0].get("content") or {}).get("parts") or []
+    return "".join(
+        part["text"] for part in parts
+        if isinstance(part.get("text"), str) and not part.get("thought", False)
+    )
+
+
 @app.post("/api/gemini/generateContent")
 async def generate_content(req: GeminiRequest) -> ApiResponse:
     """Generate text from a prompt using Gemini / Gemma models."""
@@ -103,7 +117,7 @@ async def generate_content(req: GeminiRequest) -> ApiResponse:
 
     url = (
         f"https://generativelanguage.googleapis.com"
-        f"/v1beta/models/{req.model}:generateContent?key={GOOGLE_API_KEY}"
+        f"/v1beta/models/{req.model}:generateContent"
     )
     payload = {
         "contents": [
@@ -113,17 +127,13 @@ async def generate_content(req: GeminiRequest) -> ApiResponse:
     }
 
     async with httpx.AsyncClient(timeout=60) as client:
-        resp = await client.post(url, json=payload)
+        resp = await client.post(url, headers={"x-goog-api-key": GOOGLE_API_KEY}, json=payload)
 
     if resp.status_code != 200:
         raise HTTPException(resp.status_code, resp.text)
 
     data = resp.json()
-    candidate = (
-        data["candidates"][0]["content"]["parts"][0].get("text", "")
-        if data.get("candidates")
-        else ""
-    )
+    candidate = _generated_text(data)
     return ApiResponse(
         status="ok",
         data={"model": req.model, "generated_text": candidate},
@@ -138,7 +148,7 @@ async def chat(messages: ChatRequest) -> ApiResponse:
 
     url = (
         f"https://generativelanguage.googleapis.com"
-        f"/v1beta/models/{(messages.model).replace('gemini-', 'gemini-pro-')}:generateContent?key={GOOGLE_API_KEY}"
+        f"/v1beta/models/{messages.model}:generateContent"
     )
     contents = [
         {"role": m.role if m.role in ("user", "model") else "user", "parts": [{"text": m.content}]}
@@ -151,17 +161,13 @@ async def chat(messages: ChatRequest) -> ApiResponse:
     }
 
     async with httpx.AsyncClient(timeout=90) as client:
-        resp = await client.post(url, json=payload)
+        resp = await client.post(url, headers={"x-goog-api-key": GOOGLE_API_KEY}, json=payload)
 
     if resp.status_code != 200:
         raise HTTPException(resp.status_code, resp.text)
 
     data = resp.json()
-    text = (
-        data["candidates"][0]["content"]["parts"][0].get("text", "")
-        if data.get("candidates")
-        else ""
-    )
+    text = _generated_text(data)
     return ApiResponse(
         status="ok",
         data={"model": messages.model, "response": text},
@@ -274,7 +280,7 @@ async def text_to_speech(req: SarvamTTSRequest) -> ApiResponse:
 
 class VoiceFirstRequest(BaseModel):
     """Multi-part: audio + prompt for Gemini processing."""
-    model: str = "gemini-2.0-flash"
+    model: str = DEFAULT_GEMINI_MODEL
     sarvam_model: str = "saaras:v3"
     source_language: str = "auto"
     system_prompt: Optional[str] = None
@@ -346,10 +352,9 @@ async def voice_first(
                     "Set your key to get a Gemini-powered response.",
         )
 
-    model_name = req.model.replace("gemini-", "gemini-")
     url = (
         f"https://generativelanguage.googleapis.com"
-        f"/v1beta/models/{model_name}:generateContent?key={GOOGLE_API_KEY}"
+        f"/v1beta/models/{req.model}:generateContent"
     )
     gpt_payload: dict = {
         "contents": [{"parts": [{"text": full_text}]}],
@@ -357,7 +362,7 @@ async def voice_first(
     }
 
     async with httpx.AsyncClient(timeout=90) as gemini_client:
-        gemini_resp = await gemini_client.post(url, json=gpt_payload)
+        gemini_resp = await gemini_client.post(url, headers={"x-goog-api-key": GOOGLE_API_KEY}, json=gpt_payload)
 
     if gemini_resp.status_code != 200:
         return ApiResponse(
@@ -367,9 +372,7 @@ async def voice_first(
         )
 
     llm_data = gemini_resp.json()
-    answer: str = ""
-    if llm_data.get("candidates"):
-        answer = llm_data["candidates"][0]["content"]["parts"][0].get("text", "")
+    answer = _generated_text(llm_data)
 
     return ApiResponse(
         status="ok",

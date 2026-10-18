@@ -160,7 +160,7 @@ Generate text from a single prompt using a Gemini / Gemma model.
 | Field    | Type   | Required | Default             | Description              |
 |----------|--------|----------|---------------------|--------------------------|
 | `prompt` | string | yes      | —                   | Text input               |
-| `model`  | string | no       | `gemini-2.0-flash`  | Gemini model name        |
+| `model`  | string | no       | `gemma-4-26b-a4b-it`  | Gemini model name        |
 
 **Example**
 
@@ -169,7 +169,7 @@ curl -X POST http://localhost:8000/api/gemini/generateContent \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Explain what Vaachak does in simple language.",
-    "model": "gemini-2.0-flash"
+    "model": "gemma-4-26b-a4b-it"
   }'
 ```
 
@@ -179,7 +179,7 @@ curl -X POST http://localhost:8000/api/gemini/generateContent \
 {
   "status": "ok",
   "data": {
-    "model": "gemini-2.0-flash",
+    "model": "gemma-4-26b-a4b-it",
     "generated_text": "Vaachak is a reading companion..."
   }
 }
@@ -193,14 +193,13 @@ Conversational chat that accepts full message history.
 
 - **Auth:** `GOOGLE_API_KEY` (otherwise `401`)
 - **Content type:** `application/json`
-- **Note:** the model name is rewritten by prepending `gemini-pro-` (e.g. `gemini-2.0-flash` → `gemini-pro-2.0-flash`).
 
 **Request body** (`ChatRequest`)
 
 | Field      | Type            | Required | Default            | Description                       |
 |------------|-----------------|----------|--------------------|-----------------------------------|
 | `messages` | array<object>   | yes      | —                  | List of `{role, content}` items   |
-| `model`    | string          | no       | `gemini-2.0-flash` | Gemini model name                 |
+| `model`    | string          | no       | `gemma-4-26b-a4b-it` | Gemini model name                 |
 
 `messages[].role` accepts `user` or `model` (anything else is coerced to `user`).
 
@@ -210,7 +209,7 @@ Conversational chat that accepts full message history.
 curl -X POST http://localhost:8000/api/gemini/chat \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gemini-2.0-flash",
+    "model": "gemma-4-26b-a4b-it",
     "messages": [
       {"role": "user",  "content": "Who is Vaachak?"},
       {"role": "model", "content": "Vaachak is an AI reading companion for elders."},
@@ -225,7 +224,7 @@ curl -X POST http://localhost:8000/api/gemini/chat \
 {
   "status": "ok",
   "data": {
-    "model": "gemini-2.0-flash",
+    "model": "gemma-4-26b-a4b-it",
     "response": "Vaachak offers speech-to-text, text-to-speech..."
   }
 }
@@ -339,7 +338,7 @@ One-call voice-first pipeline: **audio → Sarvam STT → Gemini → response**.
 | Field             | Type   | Required | Default                       | Description                                |
 |-------------------|--------|----------|-------------------------------|--------------------------------------------|
 | `audio_file`      | file   | yes      | —                             | Voice recording (MP3 / WAV / OGG)          |
-| `model`           | string | no       | `gemini-2.0-flash`            | Gemini LLM model                           |
+| `model`           | string | no       | `gemma-4-26b-a4b-it`            | Gemini LLM model                           |
 | `sarvam_model`    | string | no       | `saaras:v3`                   | Sarvam STT model                           |
 | `source_language` | string | no       | `auto`                        | STT source language                        |
 | `system_prompt`   | string | no       | Vaachak default instruction   | Custom system instruction for Gemini       |
@@ -350,7 +349,7 @@ One-call voice-first pipeline: **audio → Sarvam STT → Gemini → response**.
 curl -X POST "http://localhost:8000/api/voice-first" \
   -H "Content-Type: multipart/form-data" \
   -F "audio_file=@./question.mp3;type=audio/mpeg" \
-  -F "model=gemini-2.0-flash" \
+  -F "model=gemma-4-26b-a4b-it" \
   -F "sarvam_model=saaras:v3" \
   -F "source_language=auto" \
   -F "system_prompt=You are Vaachak, an AI reading assistant for the elderly."
@@ -364,7 +363,7 @@ curl -X POST "http://localhost:8000/api/voice-first" \
   "data": {
     "transcript": "What is the news today?",
     "gemini_response": "Today's top news includes...",
-    "model": "gemini-2.0-flash"
+    "model": "gemma-4-26b-a4b-it"
   },
   "message": "Voice-first pipeline complete: audio → STT → Gemini → response."
 }
