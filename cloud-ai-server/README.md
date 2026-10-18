@@ -68,6 +68,9 @@ docker compose up --build -d --wait  # Rebuild and start
 
 ## API Endpoints
 
+The existing `/api/gemini/*` routes use `gemma-4-26b-a4b-it` by default through the Gemini API. Set `GOOGLE_API_KEY` in `.env`. The server runs locally; model inference is hosted by Google. You can still override `model` in requests; model IDs are forwarded unchanged, including in chat. The server sends the key upstream in the `x-goog-api-key` header, not in the URL. Generation and chat return HTTP 401 before contacting Google if the key is missing.
+
+
 ### 1. Gemini — Text Generation (Gemini / Gemma)
 
 **`POST /api/gemini/generateContent`**
@@ -77,7 +80,7 @@ Generate text from a prompt using any Gemini model.
 | Field     | Type   | Required | Description                    |
 |-----------|--------|----------|--------------------------------|
 | `prompt`  | string | yes      | Your text input                |
-| `model`   | string | no       | Model name (default: `gemini-2.0-flash`) |
+| `model`   | string | no       | Model name (default: `gemma-4-26b-a4b-it`) |
 
 **Request:**
 ```bash
@@ -171,7 +174,7 @@ Perfect for the Vaachak reading companion — upload voice input and get a smart
 | Field                  | Type   | Required | Default              | Description               |
 |------------------------|--------|----------|----------------------|---------------------------|
 | `audio_file`           | file   | yes      | —                   | Voice recording (MP3/WAV)  |
-| `model`                | string | no       | `gemini-2.0-flash`  | Gemini LLM model           |
+| `model`                | string | no       | `gemma-4-26b-a4b-it`  | Gemini LLM model           |
 | `sarvam_model`         | string | no       | `saaras:v3`  | Sarvam STT model           |
 | `source_language`      | string | no       | `auto`              | Source language for STT     |
 | `system_prompt`        | string | no       | Vaachak default     | Custom system instruction   |
@@ -181,7 +184,7 @@ Perfect for the Vaachak reading companion — upload voice input and get a smart
 curl -X POST "http://localhost:8000/api/voice-first" \
   -H "Content-Type: multipart/form-data" \
   -F "audio_file=@./question.mp3;type=audio/mpeg" \
-  -F 'model=gemini-2.0-flash' \
+  -F 'model=gemma-4-26b-a4b-it' \
   -F 'system_prompt="You are Vaachak, an AI reading assistant for the elderly."'
 ```
 
@@ -192,7 +195,7 @@ curl -X POST "http://localhost:8000/api/voice-first" \
   "data": {
     "transcript": "What is the news today?",     // Sarvam STT result
     "gemini_response": "Today's top news includes... // Gemini answer",
-    "model": "gemini-2.0-flash"
+    "model": "gemma-4-26b-a4b-it"
   },
   "message": "Voice-first pipeline complete: audio → STT → Gemini → response."
 }
