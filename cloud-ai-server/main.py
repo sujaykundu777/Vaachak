@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import List, Optional, Union
 
 from backboard_api import create_backboard_router
+from database_api import create_database_router
 
 import httpx
 from fastapi import Body, FastAPI, File, Form, UploadFile, HTTPException
@@ -38,6 +39,9 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: Optional[str] = None
     SARVAM_API_KEY: Optional[str] = None
     BACKBOARD_API_KEY: Optional[str] = None
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_SECRET_KEY: Optional[str] = None
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
 
 
 settings = Settings()
@@ -99,6 +103,7 @@ app = FastAPI(
 
 
 app.include_router(create_backboard_router(settings.BACKBOARD_API_KEY))
+app.include_router(create_database_router(settings.SUPABASE_URL, settings.SUPABASE_SECRET_KEY or settings.SUPABASE_SERVICE_ROLE_KEY))
 
 
 # ===================================================================
