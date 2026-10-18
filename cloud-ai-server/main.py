@@ -17,6 +17,8 @@ import tempfile
 from pathlib import Path
 from typing import List, Optional, Union
 
+from backboard_api import create_backboard_router
+
 import httpx
 from fastapi import Body, FastAPI, File, Form, UploadFile, HTTPException
 from pydantic import BaseModel, Field
@@ -35,6 +37,7 @@ class Settings(BaseSettings):
 
     GOOGLE_API_KEY: Optional[str] = None
     SARVAM_API_KEY: Optional[str] = None
+    BACKBOARD_API_KEY: Optional[str] = None
 
 
 settings = Settings()
@@ -93,6 +96,9 @@ app = FastAPI(
     ),
     version="0.1.0",
 )
+
+
+app.include_router(create_backboard_router(settings.BACKBOARD_API_KEY))
 
 
 # ===================================================================
