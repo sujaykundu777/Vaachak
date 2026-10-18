@@ -30,6 +30,36 @@ API docs auto-generated at:
 
 ---
 
+## Run locally with Docker
+
+Start Docker Desktop first. From `cloud-ai-server`, create `.env` from `.env.example`
+if you do not already have one, and fill in your API keys. Compose passes this file
+into the container at runtime; it is excluded from the image build.
+
+```bash
+docker compose up --build -d --wait
+curl http://localhost:8000/api/health
+```
+
+Swagger UI: http://localhost:8000/docs
+
+```bash
+docker compose logs -f api
+docker compose down
+```
+
+If port 8000 is already used by local Uvicorn, stop it or run
+`PORT=8001 docker compose up --build -d --wait` and use port 8001.
+After code changes, rerun `docker compose up --build -d --wait`.
+After changing `.env`, run `docker compose up -d --force-recreate --wait`.
+The container runs as a non-root user with Python 3.11 and checks `/api/health`.
+A healthy status confirms the server responds, not that provider credentials are valid.
+
+
+ Filter, search, and stream logs from all your Compose services
+    in one place with Docker Desktop's Logs view. docker-desktop://dashboard/logs?appId=cloud-ai-server
+---
+
 ## API Endpoints
 
 ### 1. Gemini — Text Generation (Gemini / Gemma)
@@ -166,12 +196,12 @@ curl -X POST "http://localhost:8000/api/voice-first" \
 
 ## Health Check
 
-**`GET /health`**
+**`GET /api/health`**
 
 Returns server status and configured services.
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/api/health
 ```
 
 Response:
