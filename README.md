@@ -130,3 +130,22 @@ graph TD
 *   🗣️ *"Read"*
 *   🗣️ *"Turn off flashlight"*
 *   🗣️ *"Switch to spatial"* (for 3D sound)
+*   🗣️ *"Start eye test"* (for visual acuity calibration)
+
+---
+
+## 🏆 Hackathon Tracks & Gemma Integration
+
+As part of **Hacktoberfest 2026 x Kraftcrowd Hackathon**, **Vaachak** is built as an offline-first assistive Android application leveraging open-source Gemma & NVIDIA AI models.
+
+### Track 1: Best Use of Gemma Model
+* **G2. Voice-First AI Interaction**: Integrate voice-based intelligence that lets visually impaired users interact naturally through speech, evaluate acuity, and receive spoken audio responses.
+* **G3. Multimodal AI Intelligence**: Combines real-time camera imagery, optical character recognition (OCR), spatial 3D audio, and spoken voice inputs to understand surroundings and guide users.
+* **G5. Open Innovation with Gemma 4**: Powered by NVIDIA AI / Gemma vision & language models for clinical visual acuity scoring and real-time scene understanding.
+
+### Resources
+* [Gemma 4 Resources & Overview](https://mlh.link/gemma)
+* [Gemma Quickstart](https://mlh.link/gemma-quickstart)
+* [Gemma API Documentation](https://mlh.link/gemma-docs)
+* [Gemma Beginner Guide](https://mlh.link/gemma-beginnerguide)
+
