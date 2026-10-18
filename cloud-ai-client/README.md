@@ -56,3 +56,19 @@ Open `/ollama` or use the sidebar. Requires an existing Ollama service, normally
 - Allowlisted Next.js `/api/ollama/*` proxy uses the server-configured origin and forces `stream: false` for generation/chat. Requests time out after 290 seconds. No automatic retries, downloads, model pulls, or deletion. No cloud API key needed. Inference routing depends on your Ollama instance and selected models; this app does not override its configuration.
 
 The local playground is independent of the Python cloud-ai-server. No Python route changes are required.
+
+## Backboard memory playground
+
+Open `/memory`. Set `BACKBOARD_API_KEY` in the **Python server's** `.env`, restart/rebuild it, then refresh the readiness badge. Keys stay on the backend. This uses Backboard's documented REST API with existing httpx, so no new SDK installation is needed.
+
+Chat supports Auto, Readonly and off on every turn, optional provider/model overrides, assistant/thread continuation, and a fresh thread under the same assistant for cross-thread recall testing. Store explicit agent context with JSON metadata; browse paginated memories or search semantically. Check asynchronous memory operation status when provided. The request inspector includes provider responses, retrieved memories and timings. Only active assistant/thread IDs persist in browser storage; no API key is collected by the UI. This page is independent of the other playgrounds; it does not automatically store their context. See the backend `BACKBOARD.md` for setup and the recall test workflow.
+
+For Backboard accounts with Memory & RAG credits but no chat credits, use **Store context** or **Store context without an LLM reply** (`send_to_llm: "false"`), then test retrieval through Browse & search. LLM reply failures display the provider's explanation. The playground never changes billing or subscriptions.
+
+## Supabase database playground
+
+Open `/database`. The Python backend needs `SUPABASE_URL` and `SUPABASE_SECRET_KEY` (or legacy `SUPABASE_SERVICE_ROLE_KEY`) in its private `.env`. Run the backend migration `supabase/migrations/001_preferences_conversations.sql` in the project's SQL editor and restart/rebuild Python. No Supabase secret or SDK is bundled in the frontend.
+
+Create/select an app test user, save/load reading preferences, create/list conversations, append role-tagged messages, and load ordered history. Supports pagination and a request/response inspector. The proxy exposes only the supported database paths and GET/POST/PUT methods. The Python router uses existing httpx to reach Supabase's REST Data API.
+
+This is a local admin playground, separate from Supabase Auth. The other playgrounds do not automatically persist their messages or settings here. Backend `SUPABASE.md` documents APIs, schema, setup, access limitations, and example payloads.

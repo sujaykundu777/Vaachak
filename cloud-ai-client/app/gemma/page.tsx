@@ -126,7 +126,7 @@ export default function GemmaPlayground() {
       <div className="workspace">DEVELOPER WORKSPACE</div>
       <a className="nav nav-link nav-idle" href="/">◉ &nbsp; Voice playground <span>↗</span></a>
       <a className="nav nav-link" href="/gemma" aria-current="page">✧ &nbsp; Gemma playground <span>↗</span></a>
-      <a className="nav nav-link nav-idle" href="/ollama">◎ &nbsp; Ollama playground <span>↗</span></a><div className="aside-note"><div className="little-wave">✧</div><h3>A little space to think.</h3><p>Explore prompts and conversations with Vaachak’s Gemma integration.</p></div>
+      <a className="nav nav-link nav-idle" href="/ollama">◎ &nbsp; Ollama playground <span>↗</span></a><a className="nav nav-link nav-idle" href="/memory">▤ &nbsp; Memory playground <span>↗</span></a><a className="nav nav-link nav-idle" href="/database">▦ &nbsp; Database playground <span>↗</span></a><div className="aside-note"><div className="little-wave">✧</div><h3>A little space to think.</h3><p>Explore prompts and conversations with Vaachak’s Gemma integration.</p></div>
       <div className="version">VAACHAK CLOUD AI <span>v0.1</span></div>
     </aside>
     <main>

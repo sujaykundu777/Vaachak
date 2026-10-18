@@ -8,7 +8,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
     && useradd --create-home --uid 10001 appuser
 
-COPY --chown=appuser:appuser main.py backboard_api.py .
+COPY --chown=appuser:appuser main.py backboard_api.py database_api.py .
 USER appuser
 EXPOSE 8000
 
