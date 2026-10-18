@@ -1,4 +1,6 @@
 'use client';
+import Link from 'next/link';
+import { playgroundFetch } from '../lib/api-log-store';
 
 import ImageToTextPanel from './image-to-text';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
@@ -42,7 +44,7 @@ export default function GemmaPlayground() {
   async function checkHealth() {
     setChecking(true);
     try {
-      const response = await fetch('/api/backend/health');
+      const response = await playgroundFetch('/api/backend/health');
       const body = object(await response.json());
       setHealth(response.ok
         ? object(body.services).gemini ? 'Google API ready' : 'Google API key missing'
@@ -72,7 +74,7 @@ export default function GemmaPlayground() {
     setBusy(true);
     const start = performance.now();
     try {
-      const response = await fetch(`/api/backend/gemini/${target}`, {
+      const response = await playgroundFetch(`/api/backend/gemini/${target}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
@@ -122,11 +124,11 @@ export default function GemmaPlayground() {
 
   return <div className="shell">
     <aside>
-      <a className="brand" href="/"><b>व</b>vaachak<span>.</span></a>
+      <Link className="brand" href="/"><b>व</b>vaachak<span>.</span></Link>
       <div className="workspace">DEVELOPER WORKSPACE</div>
-      <a className="nav nav-link nav-idle" href="/">◉ &nbsp; Voice playground <span>↗</span></a>
-      <a className="nav nav-link" href="/gemma" aria-current="page">✧ &nbsp; Gemma playground <span>↗</span></a>
-      <a className="nav nav-link nav-idle" href="/ollama">◎ &nbsp; Ollama playground <span>↗</span></a><a className="nav nav-link nav-idle" href="/memory">▤ &nbsp; Memory playground <span>↗</span></a><a className="nav nav-link nav-idle" href="/database">▦ &nbsp; Database playground <span>↗</span></a><div className="aside-note"><div className="little-wave">✧</div><h3>A little space to think.</h3><p>Explore prompts and conversations with Vaachak’s Gemma integration.</p></div>
+      <Link className="nav nav-link nav-idle" href="/">◉ &nbsp; Voice playground <span>↗</span></Link>
+      <Link className="nav nav-link" href="/gemma" aria-current="page">✧ &nbsp; Gemma playground <span>↗</span></Link>
+      <Link className="nav nav-link nav-idle" href="/ollama">◎ &nbsp; Ollama playground <span>↗</span></Link><Link className="nav nav-link nav-idle" href="/memory">▤ &nbsp; Memory playground <span>↗</span></Link><Link className="nav nav-link nav-idle" href="/database">▦ &nbsp; Database playground <span>↗</span></Link><Link className="nav nav-link nav-idle" href="/logs">≋ &nbsp; Log playground <span>↗</span></Link><div className="aside-note"><div className="little-wave">✧</div><h3>A little space to think.</h3><p>Explore prompts and conversations with Vaachak’s Gemma integration.</p></div>
       <div className="version">VAACHAK CLOUD AI <span>v0.1</span></div>
     </aside>
     <main>

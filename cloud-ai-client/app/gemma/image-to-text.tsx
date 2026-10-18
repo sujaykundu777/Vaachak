@@ -1,4 +1,5 @@
 'use client';
+import { playgroundFetch } from '../lib/api-log-store';
 
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
@@ -76,7 +77,7 @@ export default function ImageToTextPanel() {
     pending.current = true; setBusy(true); setError(''); setCopied('');
     const start = performance.now();
     try {
-      const response = await fetch('/api/backend/gemini/imageToText', { method: 'POST', body: form });
+      const response = await playgroundFetch('/api/backend/gemini/imageToText', { method: 'POST', body: form });
       const raw = await response.text();
       let body: unknown;
       try { body = JSON.parse(raw); } catch { body = { detail: raw || 'Empty backend response' }; }
