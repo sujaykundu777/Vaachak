@@ -5,7 +5,7 @@ export const maxDuration = 150;
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
   const endpoint = path.join('/');
-  if (!((endpoint === 'health' && request.method === 'GET') || (['sarvam/transcribe', 'sarvam/tts'].includes(endpoint) && request.method === 'POST'))) {
+  if (!((endpoint === 'health' && request.method === 'GET') || (['sarvam/transcribe', 'sarvam/tts', 'gemini/generateContent', 'gemini/chat', 'gemini/imageToText'].includes(endpoint) && request.method === 'POST'))) {
     return Response.json({ detail: 'Unsupported endpoint or method' }, { status: 404 });
   }
   try {
@@ -26,7 +26,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     return new Response(upstream.body, { status: upstream.status, headers: { 'content-type': upstream.headers.get('content-type') || 'application/json', 'cache-control': 'no-store' } });
   } catch (error) {
     const timeout = error instanceof Error && error.name === 'TimeoutError';
-    return Response.json({ detail: timeout ? 'Backend timed out. Try a shorter audio clip.' : 'Cannot reach the Vaachak backend. Check VAACHAK_API_URL and start the FastAPI server.' }, { status: timeout ? 504 : 502 });
+    return Response.json({ detail: timeout ? 'Backend timed out. Try a shorter input or retry the request.' : 'Cannot reach the Vaachak backend. Check VAACHAK_API_URL and start the FastAPI server.' }, { status: timeout ? 504 : 502 });
   }
 }
 export { proxy as GET, proxy as POST };
