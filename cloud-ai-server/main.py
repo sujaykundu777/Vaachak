@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import httpx
 from fastapi import Body, FastAPI, File, UploadFile, HTTPException
@@ -32,13 +32,13 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    GOOGLE_API_KEY: str | None = None
-    SARVAM_API_KEY: str | None = None
+    GOOGLE_API_KEY: Optional[str] = None
+    SARVAM_API_KEY: Optional[str] = None
 
 
 settings = Settings()
-GOOGLE_API_KEY: str | None = settings.GOOGLE_API_KEY
-SARVAM_API_KEY: str | None = settings.SARVAM_API_KEY
+GOOGLE_API_KEY: Optional[str] = settings.GOOGLE_API_KEY
+SARVAM_API_KEY: Optional[str] = settings.SARVAM_API_KEY
 
 
 class GeminiRequest(BaseModel):
@@ -71,7 +71,7 @@ class SarvamTTSRequest(BaseModel):
 
 class ApiResponse(BaseModel):
     status: str
-    data: dict | list | str | None = None
+    data: Optional[Union[dict, list, str]] = None
     message: Optional[str] = None
     audio_url: Optional[str] = None
     audio_base64: Optional[str] = None
@@ -386,7 +386,7 @@ async def voice_first(
 #  Health Check
 # ===================================================================
 
-@app.get("/health")
+@app.get("/api/health")
 async def health():
     return {
         "status": "healthy",
