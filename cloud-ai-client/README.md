@@ -1,6 +1,6 @@
-# Vaachak voice playground
+# Vaachak AI playgrounds
 
-Next.js App Router + TypeScript UI for the existing FastAPI Sarvam APIs.
+Next.js App Router + TypeScript UI for the existing FastAPI Sarvam and Gemma APIs.
 
 ## Run
 
@@ -31,3 +31,15 @@ npm run build
 ```
 
 A running Python backend and valid Sarvam key are needed for a full provider smoke test. This playground is for local development; add authentication before public deployment.
+
+## Gemma playground
+
+Open `/gemma` or use the sidebar. Tests `/api/gemini/generateContent` with `{prompt, model}` and `/api/gemini/chat` with `{messages: [{role, content}], model}`. The default model is `gemma-4-26b-a4b-it`, matching the current Python backend. The model field is editable before starting a chat. New chat clears history and unlocks model selection.
+
+Configure `GOOGLE_API_KEY` on the Python server. Health readiness checks the backend's `services.gemini` flag; it confirms key configuration, not provider access or quota. Errors show HTTP status, timing, raw responses, and preserve the input for manual retries. Only successful user/model turns join chat history. No automatic retries or streaming; the backend returns a complete response. Request inspection separates the next request from the last sent request.
+
+## Image to text
+
+The Gemma playground now includes an **Image to text** tab. Upload one PNG/JPEG/WebP (up to 10 MiB), preview it, edit the vision model and extraction instructions, then extract text. A generated sample image is available. Results can be copied or downloaded as UTF-8 `.txt`; HTTP status, timing, request metadata and the raw response are inspectable. Binary image data is omitted from the inspector.
+
+Requires the new Python `POST /api/gemini/imageToText` route, with multipart fields `file`, `prompt`, and `model`. Rebuild/restart the backend after adding this route. A 404 in the UI explains this requirement. Uses the existing backend `GOOGLE_API_KEY`. Images are sent to Google only when you click Extract text; browser previews use local object URLs and are released on replacement/unmount. No automatic upload or local persistence.
