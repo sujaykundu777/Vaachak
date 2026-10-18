@@ -43,3 +43,16 @@ Configure `GOOGLE_API_KEY` on the Python server. Health readiness checks the bac
 The Gemma playground now includes an **Image to text** tab. Upload one PNG/JPEG/WebP (up to 10 MiB), preview it, edit the vision model and extraction instructions, then extract text. A generated sample image is available. Results can be copied or downloaded as UTF-8 `.txt`; HTTP status, timing, request metadata and the raw response are inspectable. Binary image data is omitted from the inspector.
 
 Requires the new Python `POST /api/gemini/imageToText` route, with multipart fields `file`, `prompt`, and `model`. Rebuild/restart the backend after adding this route. A 404 in the UI explains this requirement. Uses the existing backend `GOOGLE_API_KEY`. Images are sent to Google only when you click Extract text; browser previews use local object URLs and are released on replacement/unmount. No automatic upload or local persistence.
+
+## Ollama local playground
+
+Open `/ollama` or use the sidebar. Requires an existing Ollama service, normally at `http://127.0.0.1:11434`. Start it with the Ollama app or `ollama serve`. Set `OLLAMA_API_URL` in `.env.local` to use another instance (origin only, without `/api`), then restart Next.js. If Next.js runs in Docker, use `http://host.docker.internal:11434` to reach Ollama on the host.
+
+- Model discovery uses `GET /api/tags`; refresh updates installed models. The picker filters completion/embedding models when the service reports capabilities, and otherwise lists them for testing.
+- Generation uses `POST /api/generate`; multi-turn chat uses `POST /api/chat` with native `user`/`assistant` roles. Only successful turns enter chat history. Start a new chat before changing its model or system instruction.
+- Embeddings uses `POST /api/embed` with the selected embedding model; displays dimensions and a preview, with the full vector in the inspector.
+- Temperature, output limit, optional thinking mode, system instruction and keep-alive controls are exposed. Thinking defaults to the model setting; unsupported overrides surface Ollama errors. Increase output tokens or turn thinking off if the budget is consumed before a final answer.
+- Shows HTTP status, wall time, model load time and generation tokens/second (when reported). Request/response inspection distinguishes the next request from the last request.
+- Allowlisted Next.js `/api/ollama/*` proxy uses the server-configured origin and forces `stream: false` for generation/chat. Requests time out after 290 seconds. No automatic retries, downloads, model pulls, or deletion. No cloud API key needed. Inference routing depends on your Ollama instance and selected models; this app does not override its configuration.
+
+The local playground is independent of the Python cloud-ai-server. No Python route changes are required.
