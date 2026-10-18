@@ -107,13 +107,13 @@ Sarvam supports Indian languages: Hindi, Bengali, Tamil, Telugu, Marathi, Urdu, 
 
 **`POST /api/sarvam/tts`**
 
-Convert text → audio file (returned as **Base64-encoded MP3**).
+Convert text → audio file (returned as **Base64-encoded MP3**). Uses Sarvam’s `/text-to-speech` endpoint with `api-subscription-key` authentication. Short language codes such as `hi` are mapped to `hi-IN`; BCP-47 codes are accepted directly.
 
 | Field       | Type   | Required | Default     | Description            |
 |-------------|--------|----------|-------------|------------------------|
 | `text`      | string | yes      | —          | Text to convert        |
 | `language`  | string | no       | `en`       | Language of the text   |
-| `model`     | string | no       | `sarvam-0.7b-v1-low` | TTS model identifier   |
+| `model`     | string | no       | `bulbul:v3` | TTS model identifier   |
 
 **Request:**
 ```bash

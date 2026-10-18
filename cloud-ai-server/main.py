@@ -12,7 +12,6 @@ Usage:
 
 from __future__ import annotations
 
-import base64
 import tempfile
 from pathlib import Path
 from typing import List, Optional
@@ -67,7 +66,7 @@ class SarvamTranscribeResponse(BaseModel):
 class SarvamTTSRequest(BaseModel):
     text: str
     language: str = "en"
-    model: str = "sarvam-0.7b-v1-low"
+    model: str = "bulbul:v3"
 
 
 class ApiResponse(BaseModel):
@@ -236,25 +235,36 @@ async def text_to_speech(req: SarvamTTSRequest) -> ApiResponse:
     if not SARVAM_API_KEY:
         raise HTTPException(401, "SARVAM_API_KEY not set in environment")
 
-    url = f"https://tts.sarvam.ai/tts/v2?api_key={SARVAM_API_KEY}"
+    url = "https://api.sarvam.ai/text-to-speech"
+    headers = {"api-subscription-key": SARVAM_API_KEY}
+    language = req.language.strip()
+    if "-" not in language:
+        language = f"{language.lower()}-IN"
     payload = {
         "text": req.text,
-        "language": req.language,
+        "language_code": language,
         "model": req.model,
-        "format": "mp3",          # mp3 output by default
+        "output_audio_codec": "mp3",
     }
 
     async with httpx.AsyncClient(timeout=60) as client:
-        resp = await client.post(url, json=payload)
+        resp = await client.post(url, headers=headers, json=payload)
 
     if resp.status_code != 200:
         raise HTTPException(resp.status_code, resp.text)
 
-    # Sarvam returns raw audio bytes on success
+    try:
+        audios = resp.json()["audios"]
+        if not isinstance(audios, list) or not audios or not isinstance(audios[0], str) or not audios[0]:
+            raise ValueError("Missing audio")
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(502, "Sarvam returned an invalid audio response") from exc
+
+    # Sarvam already returns base64-encoded audio in its JSON response.
     return ApiResponse(
         status="ok",
         data={"message": f"TTS audio generated for '{req.language}' text"},
-        audio_base64=base64.b64encode(resp.content).decode("utf-8"),
+        audio_base64=audios[0],
     )
 
 
