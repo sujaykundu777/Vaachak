@@ -12,6 +12,7 @@ https://docs.google.com/presentation/d/11WM5la02aXDbEHukz5thxk6YvKBBeb10_8SE1YJA
 ### DEMO VIDEO
 
 Youtube - https://youtu.be/aJADQ3tX5s4
+https://youtu.be/onqhgiilUOk
 
 ### DEMO URL
 
