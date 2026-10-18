@@ -60,3 +60,9 @@ Gemma Beginner Guide
 For coding 
 
 We are using OpenCode with Qwen 3.6:latest model locally
+
+
+MCP Servers Used:
+
+https://devrelay.com
+https://github.com/github/github-mcp-server
