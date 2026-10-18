@@ -130,7 +130,7 @@ graph TD
 1. **Download** this code to your computer.
 2. Open it in **Android Studio**.
 3. Let it finish loading.
-4. The app uses `https://vaachakfastapibackend.onrender.com/` by default. To change it, set `VAACHAK_API_URL` in `app/.env` or root `local.properties`. Provider keys stay on the backend. Telegram alerts still use `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in root `local.properties`.
+4. The app uses `https://vaachakfastapibackend.onrender.com/` by default. To change it, set an HTTPS `VAACHAK_API_URL` in `app/.env` or root `local.properties`. Legacy `app/src/.env` is also loaded and takes precedence over `app/.env`, which takes precedence over root `local.properties`. Remove stale HTTP overrides before syncing; local frontend access uses the separate `frontend` variant. Provider keys stay on the backend. Telegram alerts still use `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in root `local.properties`.
 5. **Run** it on a real Android phone (the camera and sensors won't work properly on an emulator).
 
 ---
