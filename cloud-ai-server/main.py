@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import httpx
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import Body, FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------------------------
