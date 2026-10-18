@@ -1,4 +1,4 @@
-# VSense — An Assistive App for the Visually Impaired
+# Vaachak — An Assistive App for the Visually Impaired
 
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen) ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white) ![Powered by](https://img.shields.io/badge/Powered_by-AI-blue)
 

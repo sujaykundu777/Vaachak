@@ -22,6 +22,10 @@ class VoiceAssistantManager(
     private val AWAKE_DURATION = 10000L // 10 seconds of listening for commands after wake word
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    var onEyeTestSpeechListener: ((String) -> Unit)? = null
+    var onRmsChangedListener: ((Float) -> Unit)? = null
+    var isEyeTestMode: Boolean = false
+
     init {
         mainHandler.post {
             initializeRecognizer()
@@ -34,7 +38,9 @@ class VoiceAssistantManager(
             speechRecognizer?.setRecognitionListener(object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {}
                 override fun onBeginningOfSpeech() {}
-                override fun onRmsChanged(rmsdB: Float) {}
+                override fun onRmsChanged(rmsdB: Float) {
+                    onRmsChangedListener?.invoke(rmsdB)
+                }
                 override fun onBufferReceived(buffer: ByteArray?) {}
                 override fun onEndOfSpeech() {}
 
@@ -48,7 +54,11 @@ class VoiceAssistantManager(
                     if (!matches.isNullOrEmpty()) {
                         val text = matches[0].lowercase()
                         Log.d("VoiceAssistant", "Heard: $text")
-                        processText(text)
+                        if (isEyeTestMode && onEyeTestSpeechListener != null) {
+                            onEyeTestSpeechListener?.invoke(text)
+                        } else {
+                            processText(text)
+                        }
                     }
                     isListening = false
                 }

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -10,7 +12,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.smartblindstick"
+        applicationId = "com.vaachak.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -18,17 +20,29 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Read secrets from local.properties (gitignored)
-        val localProperties = java.util.Properties()
+        // Read secrets from local.properties and app/.env (gitignored)
+        val localProperties = Properties()
         val localPropertiesFile = rootProject.file("local.properties")
         if (localPropertiesFile.exists()) {
             localPropertiesFile.inputStream().use { localProperties.load(it) }
         }
 
+        val envProperties = Properties()
+        val envFile = file(".env")
+        if (envFile.exists()) {
+            envFile.inputStream().use { envProperties.load(it) }
+        }
+
+        val gemmaKey = envProperties.getProperty("NVIDIA_GEMMA_API_KEY")
+            ?: localProperties.getProperty("NVIDIA_GEMMA_API_KEY")
+            ?: envProperties.getProperty("NVIDIA_API_KEY")
+            ?: localProperties.getProperty("NVIDIA_API_KEY", "")
+
         buildConfigField("String", "TELEGRAM_BOT_TOKEN", "\"${localProperties.getProperty("TELEGRAM_BOT_TOKEN", "")}\"")
         buildConfigField("String", "TELEGRAM_CHAT_ID", "\"${localProperties.getProperty("TELEGRAM_CHAT_ID", "")}\"")
         buildConfigField("String", "NVIDIA_API_KEY", "\"${localProperties.getProperty("NVIDIA_API_KEY", "")}\"")
         buildConfigField("String", "NVIDIA_META_API_KEY", "\"${localProperties.getProperty("NVIDIA_META_API_KEY", "")}\"")
+        buildConfigField("String", "NVIDIA_GEMMA_API_KEY", "\"${gemmaKey}\"")
     }
 
     buildTypes {
