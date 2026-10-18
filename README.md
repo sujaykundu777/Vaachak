@@ -12,6 +12,14 @@ https://docs.google.com/presentation/d/11WM5la02aXDbEHukz5thxk6YvKBBeb10_8SE1YJA
 ### DEMO VIDEO
 
 
+### DEMO URL
+
+Web app Hosted :https://vaachak-ebon.vercel.app/
+
+API endpoint 
+https://vaachakfastapibackend.onrender.com/
+
+
 
 A smart, voice-controlled Android app that helps visually impaired people navigate their surroundings safely. It acts as an intelligent assistant that can "see" objects, warn about obstacles, and guide the user.
 
