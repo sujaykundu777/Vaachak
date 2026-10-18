@@ -5,6 +5,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
@@ -23,6 +24,20 @@ class RenderUiTest {
         }
     }
     @get:Rule val compose = createAndroidComposeRule<VaachakMainActivity>()
+    @Test fun offlineModeKeepsCloudReadingDisabledAcrossTabs() {
+        compose.waitUntil(15000) {
+            runCatching { compose.onAllNodesWithText("Surroundings").fetchSemanticsNodes().isNotEmpty() }.getOrDefault(false)
+        }
+        compose.onNodeWithText("Surroundings").performClick()
+        compose.onNodeWithText("Online Mode").performClick()
+        compose.onNodeWithText("Offline Mode").performClick()
+        compose.onNodeWithText("Text Reader").performClick()
+        compose.onNodeWithText("Read with Cloud AI").assertIsNotEnabled()
+        compose.onNodeWithText("Switch Surroundings to Online Mode to enable cloud reading.").assertIsDisplayed()
+        compose.onNodeWithText("Surroundings").performClick()
+        compose.onNodeWithText("Offline Mode").assertIsDisplayed()
+    }
+
     @Test fun appOpensPlaygroundAndCallsRender() {
         assumeTrue(InstrumentationRegistry.getArguments().getString("liveRender") == "true")
         compose.waitUntil(15000) {

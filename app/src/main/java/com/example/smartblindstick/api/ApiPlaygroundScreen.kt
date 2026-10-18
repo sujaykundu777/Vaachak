@@ -174,7 +174,7 @@ fun ApiPlaygroundScreen(onBack: () -> Unit) {
                     }
                     val request = when {
                         endpoint.upload.isNotEmpty() -> api.uploadRequest(path, requireNotNull(fileBytes) { "Choose a file first" }, fileMime,
-                            json.entrySet().associate { it.key to it.value.asString })
+                            imageUploadFields(json))
                         endpoint.method == "GET" -> api.request(path)
                         else -> api.jsonRequest(path, json.toString(), endpoint.method)
                     }

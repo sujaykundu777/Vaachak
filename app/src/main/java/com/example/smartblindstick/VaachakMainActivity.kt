@@ -233,8 +233,12 @@ open class VaachakMainActivity : ComponentActivity(), TextToSpeech.OnInitListene
                         "Text Reader" -> {
                             voiceAssistantManager.isEyeTestMode = false
                             TextReaderScreen(
-                                onCloudReadRequested = {
-                                    inferenceMode.value = AiInferenceMode.ONLINE
+                                cloudReadEnabled = inferenceMode.value.isOnline,
+                                onCloudReadRequested = cloudRead@{
+                                    if (!inferenceMode.value.isOnline) {
+                                        speak("Switch Surroundings to Online Mode to use cloud reading.", isHighPriority = true)
+                                        return@cloudRead
+                                    }
                                     isOcrRequested = false
                                     nvidiaPrompt = "Extract all visible text, preserving its original language and reading order. Return only the extracted text."
                                     isNvidiaRequested = true

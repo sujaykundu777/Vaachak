@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 fun TextReaderScreen(
     onReadRequested: () -> Unit,
     onCloudReadRequested: () -> Unit,
+    cloudReadEnabled: Boolean,
     onTabSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -89,8 +90,11 @@ fun TextReaderScreen(
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedButton(onClick = onCloudReadRequested, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+            OutlinedButton(onClick = onCloudReadRequested, enabled = cloudReadEnabled, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                 Text("Read with Cloud AI")
+            }
+            if (!cloudReadEnabled) {
+                Text("Switch Surroundings to Online Mode to enable cloud reading.", textAlign = TextAlign.Center)
             }
         }
     }
