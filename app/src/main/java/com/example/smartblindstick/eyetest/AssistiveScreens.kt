@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TextReaderScreen(
     onReadRequested: () -> Unit,
+    onCloudReadRequested: () -> Unit,
     onTabSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -87,6 +88,10 @@ fun TextReaderScreen(
                     Text("Point Camera & Read Aloud", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(onClick = onCloudReadRequested, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                Text("Read with Cloud AI")
+            }
         }
     }
 }
@@ -128,10 +133,14 @@ fun HelpScreen(
                 lineHeight = 18.sp
             )
 
+            Button(onClick = { onTabSelected("API Playground") }, modifier = Modifier.fillMaxWidth()) {
+                Text("Open Cloud API Playground")
+            }
+
             val commands = listOf(
                 Pair("Eye Test", "Read letters aloud during the test. Say 'Next' to advance, or 'I cannot see' if letters are unreadable."),
                 Pair("\"Read\"", "Scans any physical document or text in front of you and reads it aloud."),
-                Pair("\"Describe\"", "Uses Nvidia Vision AI to describe your surroundings in full rich detail."),
+                Pair("\"Describe\"", "Uses Vaachak Vision AI to describe your surroundings in full rich detail."),
                 Pair("\"Find [item]\"", "Searches for an item (e.g. cup, chair, door, keys) using a 3x3 directional spatial grid."),
                 Pair("\"Turn on/off flashlight\"", "Manually or automatically triggers camera torch to illuminate dark rooms."),
                 Pair("\"Switch to spatial audio\"", "Enables directional binaural audio beeps to guide movement.")

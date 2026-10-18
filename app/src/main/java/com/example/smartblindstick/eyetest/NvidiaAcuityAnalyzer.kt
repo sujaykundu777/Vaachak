@@ -1,18 +1,14 @@
 package com.example.smartblindstick.eyetest
 
-import android.util.Log
-import com.example.smartblindstick.BuildConfig
+import com.example.smartblindstick.api.VaachakApi
+import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
+import kotlinx.coroutines.suspendCancellableCoroutine
+import okhttp3.Call
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.IOException
-import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 data class AiAcuityAnalysis(
     val accuracyScore: Int,
@@ -26,17 +22,7 @@ data class AiAcuityAnalysis(
 
 object NvidiaAcuityAnalyzer {
 
-    private const val TAG = "NvidiaAcuityAnalyzer"
-    private const val API_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
-
-    // Primary Llama 3.2 Vision Instruct 11B model endpoint active on the provided NVIDIA API key
-    private const val PRIMARY_MODEL = "meta/llama-3.2-11b-vision-instruct"
-
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(12, TimeUnit.SECONDS)
-        .readTimeout(12, TimeUnit.SECONDS)
-        .writeTimeout(12, TimeUnit.SECONDS)
-        .build()
+    private val api = VaachakApi()
 
     /**
      * Suspending version of analyzeSpeech for Coroutines / LaunchedEffect.
@@ -47,10 +33,11 @@ object NvidiaAcuityAnalyzer {
         stepIndex: Int = 0,
         highestPassedIndex: Int = -1
     ): AiAcuityAnalysis = withContext(Dispatchers.IO) {
-        suspendCoroutine { cont ->
-            analyzeSpeech(targetLine, spokenText, stepIndex, highestPassedIndex) { result ->
-                cont.resume(result)
+        suspendCancellableCoroutine { cont ->
+            val call = analyzeSpeech(targetLine, spokenText, stepIndex, highestPassedIndex) { result ->
+                if (cont.isActive) cont.resume(result)
             }
+            cont.invokeOnCancellation { call.cancel() }
         }
     }
 
@@ -63,19 +50,7 @@ object NvidiaAcuityAnalyzer {
         stepIndex: Int = 0,
         highestPassedIndex: Int = -1,
         onResult: (AiAcuityAnalysis) -> Unit
-    ) {
-        val apiKey = BuildConfig.NVIDIA_LLAMA_API_KEY.ifEmpty {
-            BuildConfig.NVIDIA_API_KEY
-        }.ifEmpty {
-            BuildConfig.NVIDIA_GEMMA_API_KEY
-        }
-
-        if (apiKey.isEmpty()) {
-            Log.w(TAG, "No NVIDIA API key found. Falling back to on-device evaluator.")
-            fallbackLocalAnalysis(targetLine, spokenText, stepIndex, highestPassedIndex, onResult)
-            return
-        }
-
+    ): Call {
         val systemPrompt = """
             You are an expert clinical optometrist and AI speech evaluator for the Vaachak visual acuity eye test.
             You evaluate what letters or statements the user spoke when attempting to read the target letters shown on screen at a specific Snellen acuity distance.
@@ -111,54 +86,14 @@ object NvidiaAcuityAnalyzer {
 
         val userPrompt = "Current Step: ${stepIndex + 1} (Acuity: ${targetLine.standard}) - Expected letters: '${targetLine.displayLetters}'. Highest passed step so far: ${highestPassedIndex + 1}. The user spoke: '$spokenText'."
 
-        val json = JSONObject()
-        json.put("model", PRIMARY_MODEL)
-        json.put("temperature", 0.1)
-        json.put("max_tokens", 350)
-
-        val messages = JSONArray()
-        val sysMsg = JSONObject()
-        sysMsg.put("role", "system")
-        sysMsg.put("content", systemPrompt)
-        messages.put(sysMsg)
-
-        val usrMsg = JSONObject()
-        usrMsg.put("role", "user")
-        usrMsg.put("content", userPrompt)
-        messages.put(usrMsg)
-
-        json.put("messages", messages)
-
-        val requestBody = json.toString().toRequestBody("application/json".toMediaType())
-        val request = Request.Builder()
-            .url(API_URL)
-            .post(requestBody)
-            .addHeader("Authorization", "Bearer $apiKey")
-            .addHeader("Accept", "application/json")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                Log.e(TAG, "NVIDIA API call failed, using local fallback", e)
-                fallbackLocalAnalysis(targetLine, spokenText, stepIndex, highestPassedIndex, onResult)
+        val body = JsonObject().apply { addProperty("prompt", "$systemPrompt\n\n$userPrompt") }
+        return api.enqueue(api.jsonRequest("/api/gemini/generateContent", body.toString())) { result ->
+            val parsed = result.getOrNull()?.text()?.let { text ->
+                runCatching { parseAiResponse(text, targetLine, spokenText, stepIndex, highestPassedIndex) }.getOrNull()
             }
-
-            override fun onResponse(call: Call, response: Response) {
-                val body = response.body?.string()
-                if (response.isSuccessful && body != null) {
-                    try {
-                        val parsed = parseAiResponse(body, targetLine, spokenText, stepIndex, highestPassedIndex)
-                        onResult(parsed)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to parse NVIDIA response: $body", e)
-                        fallbackLocalAnalysis(targetLine, spokenText, stepIndex, highestPassedIndex, onResult)
-                    }
-                } else {
-                    Log.e(TAG, "NVIDIA API returned error ${response.code}: $body")
-                    fallbackLocalAnalysis(targetLine, spokenText, stepIndex, highestPassedIndex, onResult)
-                }
-            }
-        })
+            if (parsed != null) onResult(parsed)
+            else fallbackLocalAnalysis(targetLine, spokenText, stepIndex, highestPassedIndex, onResult)
+        }
     }
 
     private fun parseAiResponse(
@@ -168,12 +103,7 @@ object NvidiaAcuityAnalyzer {
         stepIndex: Int,
         highestPassedIndex: Int
     ): AiAcuityAnalysis {
-        val jsonObject = JSONObject(rawJson)
-        val content = jsonObject.getJSONArray("choices")
-            .getJSONObject(0)
-            .getJSONObject("message")
-            .getString("content")
-            .trim()
+        val content = rawJson.trim()
 
         // Clean any markdown code fences if present (e.g. ```json ... ```)
         val cleaned = content
@@ -191,7 +121,7 @@ object NvidiaAcuityAnalyzer {
         val accuracyScore = data.optInt("accuracy_score", 0)
         val correctCount = data.optInt("correct_count", 0)
         val misreadCount = data.optInt("misread_count", 0)
-        val explanation = data.optString("explanation", "NVIDIA Llama 3.2 Vision AI visual acuity analysis complete.")
+        val explanation = data.optString("explanation", "Vaachak AI reading evaluation complete.")
 
         val heardLetters = mutableListOf<String>()
         val lettersArray = data.optJSONArray("heard_letters")

@@ -59,6 +59,7 @@ open class VaachakMainActivity : ComponentActivity(), TextToSpeech.OnInitListene
     @Volatile
     protected var isOcrRequested = false
     protected var ocrRequestTime = 0L
+    private val inferenceMode = mutableStateOf(AiInferenceMode.ONLINE)
     @Volatile
     protected var isNvidiaRequested = false
     @Volatile
@@ -145,6 +146,9 @@ open class VaachakMainActivity : ComponentActivity(), TextToSpeech.OnInitListene
                     color = MaterialTheme.colorScheme.background
                 ) {
                     when (currentTabState.value) {
+                        "API Playground" -> com.example.smartblindstick.api.ApiPlaygroundScreen(
+                            onBack = { currentTabState.value = "Help" }
+                        )
                         "Eye Test" -> {
                             voiceAssistantManager.isEyeTestMode = true
                             EyeTestScreen(
@@ -176,6 +180,7 @@ open class VaachakMainActivity : ComponentActivity(), TextToSpeech.OnInitListene
                             voiceAssistantManager.isEyeTestMode = false
                             Box(modifier = Modifier.fillMaxSize()) {
                                 MainScreen(
+                                    selectedAiMode = inferenceMode.value,
                                     cameraExecutor = cameraExecutor,
                                     visionProcessor = visionProcessor,
                                     onAnalyzeImage = { imageProxy ->
@@ -190,9 +195,14 @@ open class VaachakMainActivity : ComponentActivity(), TextToSpeech.OnInitListene
                                             }
                                         } else if (isNvidiaRequested) {
                                             isNvidiaRequested = false
-                                            val currentPrompt = nvidiaPrompt
-                                            visionProcessor.processForNvidia(imageProxy, currentPrompt) { answer ->
-                                                speak(answer, isHighPriority = true)
+                                            if (inferenceMode.value.isOnline) {
+                                                val currentPrompt = nvidiaPrompt
+                                                visionProcessor.processForNvidia(imageProxy, currentPrompt) { answer ->
+                                                    speak(answer, isHighPriority = true)
+                                                }
+                                            } else {
+                                                visionProcessor.processImageProxy(imageProxy)
+                                                speak("Cloud descriptions are disabled in offline mode. On-device detection and text reading are available.", isHighPriority = true)
                                             }
                                         } else {
                                             visionProcessor.processImageProxy(imageProxy)
@@ -206,6 +216,7 @@ open class VaachakMainActivity : ComponentActivity(), TextToSpeech.OnInitListene
                                         voiceAssistantManager.startListening()
                                     },
                                     onModeChanged = { mode ->
+                                        inferenceMode.value = mode
                                         speak("Switched to ${mode.title}. Using ${mode.modelName}.", isHighPriority = true)
                                     }
                                 )
@@ -222,6 +233,14 @@ open class VaachakMainActivity : ComponentActivity(), TextToSpeech.OnInitListene
                         "Text Reader" -> {
                             voiceAssistantManager.isEyeTestMode = false
                             TextReaderScreen(
+                                onCloudReadRequested = {
+                                    inferenceMode.value = AiInferenceMode.ONLINE
+                                    isOcrRequested = false
+                                    nvidiaPrompt = "Extract all visible text, preserving its original language and reading order. Return only the extracted text."
+                                    isNvidiaRequested = true
+                                    currentTabState.value = "Surroundings"
+                                    speak("Point your camera at the text. Reading with cloud AI.", isHighPriority = true)
+                                },
                                 onReadRequested = {
                                     isOcrRequested = true
                                     ocrRequestTime = System.currentTimeMillis()
@@ -279,7 +298,7 @@ open class VaachakMainActivity : ComponentActivity(), TextToSpeech.OnInitListene
                 val prompt = command.replace("ask nvidia", "").replace("nvidia", "").trim()
                 nvidiaPrompt = if (prompt.isEmpty()) "Describe what you see in front of me." else prompt
                 isNvidiaRequested = true
-                speak("Asking Nvidia...", isHighPriority = true)
+                speak("Asking Vaachak...", isHighPriority = true)
             }
             command.contains("go to") || command.contains("navigate to") -> {
                 val destination = command.replace("go to", "").replace("navigate to", "").trim()

@@ -186,7 +186,7 @@ class VisionProcessor(private val context: Context) {
             if (answer != null) {
                 onResponse(answer)
             } else {
-                onResponse("Sorry, I couldn't reach the Nvidia server.")
+                onResponse("Sorry, I couldn't reach the Vaachak server.")
             }
         }
         imageProxy.close()

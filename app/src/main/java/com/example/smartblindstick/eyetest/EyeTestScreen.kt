@@ -31,7 +31,7 @@ import kotlinx.coroutines.delay
  *  - DYNAMIC LETTER SIZING: Letters visibly shrink step-by-step as the user talks and advances
  *    (76sp down to 18sp).
  *  - ACCURATE BLINDNESS EVALUATION: Accurately differentiates Completely Blind vs Partially Blind
- *    vs Myopia vs Normal Vision powered by NVIDIA AI.
+ *    vs Myopia vs Normal Vision powered by Vaachak AI.
  *  - CLEAN SPEECH RECORDING: Correctly parses letters and displays what was spoken without corruption.
  *  - MINIMALIST & ACCESSIBLE UI: Large high-contrast touch targets (60-70dp buttons), uncluttered layout,
  *    and audio-first accessibility.
@@ -82,7 +82,7 @@ fun EyeTestScreen(
         )
     }
 
-    // AI analysis result from NVIDIA API
+    // AI analysis result from Vaachak API
     var latestAiAnalysis by remember { mutableStateOf<AiAcuityAnalysis?>(null) }
     var isAiAnalyzing by remember { mutableStateOf(false) }
 
@@ -441,7 +441,7 @@ fun EyeTestScreen(
                     // Diagnosis diagnosis status
                     latestAiAnalysis?.let { ai ->
                         Text(
-                            text = "NVIDIA AI: ${ai.classification.title} — ${ai.clinicalExplanation}",
+                            text = "Vaachak AI: ${ai.classification.title} — ${ai.clinicalExplanation}",
                             fontSize = 12.sp,
                             color = textSecondary,
                             lineHeight = 16.sp,

@@ -37,20 +37,14 @@ android {
             srcEnvFile.inputStream().use { envProperties.load(it) }
         }
 
-        val resolvedNvidiaKey = envProperties.getProperty("NVIDIA_API_KEY")
-            ?: localProperties.getProperty("NVIDIA_API_KEY")
-            ?: envProperties.getProperty("NVIDIA_LLAMA_API_KEY")
-            ?: localProperties.getProperty("NVIDIA_LLAMA_API_KEY")
-            ?: envProperties.getProperty("NVIDIA_GEMMA_API_KEY")
-            ?: localProperties.getProperty("NVIDIA_GEMMA_API_KEY")
-            ?: ""
-
+        val backendUrl = envProperties.getProperty("VAACHAK_API_URL")
+            ?: localProperties.getProperty("VAACHAK_API_URL")
+            ?: "https://vaachakfastapibackend.onrender.com/"
+        require(backendUrl.startsWith("https://")) { "VAACHAK_API_URL must use HTTPS" }
+        buildConfigField("String", "VAACHAK_API_URL", "\"${backendUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
         buildConfigField("String", "TELEGRAM_BOT_TOKEN", "\"${localProperties.getProperty("TELEGRAM_BOT_TOKEN", "")}\"")
         buildConfigField("String", "TELEGRAM_CHAT_ID", "\"${localProperties.getProperty("TELEGRAM_CHAT_ID", "")}\"")
-        buildConfigField("String", "NVIDIA_API_KEY", "\"${resolvedNvidiaKey}\"")
-        buildConfigField("String", "NVIDIA_LLAMA_API_KEY", "\"${resolvedNvidiaKey}\"")
-        buildConfigField("String", "NVIDIA_META_API_KEY", "\"${localProperties.getProperty("NVIDIA_META_API_KEY", "")}\"")
-        buildConfigField("String", "NVIDIA_GEMMA_API_KEY", "\"${resolvedNvidiaKey}\"")
+
     }
 
     buildTypes {
@@ -83,6 +77,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

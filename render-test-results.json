@@ -1,0 +1,149 @@
+[
+  {
+    "path": "/api/health",
+    "http": 200,
+    "status": "healthy",
+    "passed": true,
+    "seconds": 0.4
+  },
+  {
+    "path": "/api/db/status",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 1.9
+  },
+  {
+    "path": "/api/backboard/status",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 0.4
+  },
+  {
+    "path": "/api/gemini/generateContent",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 2.4
+  },
+  {
+    "path": "/api/gemini/chat",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 2.2
+  },
+  {
+    "path": "/api/gemini/imageToText",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 10.7
+  },
+  {
+    "path": "/api/sarvam/tts",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 2.3
+  },
+  {
+    "path": "/api/sarvam/transcribe?model=saaras:v3&source_language=unknown",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 3.2
+  },
+  {
+    "path": "/api/voice-first",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 14.0
+  },
+  {
+    "path": "/api/db/users",
+    "http": 201,
+    "status": "ok",
+    "passed": true,
+    "seconds": 0.7
+  },
+  {
+    "path": "/api/db/users/c8564e91-c90d-4d30-8180-be4fd0bbdaba/preferences",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 1.0
+  },
+  {
+    "path": "/api/db/users/c8564e91-c90d-4d30-8180-be4fd0bbdaba/preferences",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 1.8
+  },
+  {
+    "path": "/api/db/users/c8564e91-c90d-4d30-8180-be4fd0bbdaba/conversations",
+    "http": 201,
+    "status": "ok",
+    "passed": true,
+    "seconds": 1.0
+  },
+  {
+    "path": "/api/db/users/c8564e91-c90d-4d30-8180-be4fd0bbdaba/conversations",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 0.9
+  },
+  {
+    "path": "/api/db/users/c8564e91-c90d-4d30-8180-be4fd0bbdaba/conversations/4d3f0990-ea56-4cc1-bfa7-24793a3c71b2/messages",
+    "http": 201,
+    "status": "ok",
+    "passed": true,
+    "seconds": 1.0
+  },
+  {
+    "path": "/api/db/users/c8564e91-c90d-4d30-8180-be4fd0bbdaba/conversations/4d3f0990-ea56-4cc1-bfa7-24793a3c71b2/messages",
+    "http": 201,
+    "status": "ok",
+    "passed": true,
+    "seconds": 1.0
+  },
+  {
+    "path": "/api/db/users/c8564e91-c90d-4d30-8180-be4fd0bbdaba/conversations/4d3f0990-ea56-4cc1-bfa7-24793a3c71b2/messages",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 1.1
+  },
+  {
+    "path": "/api/backboard/message",
+    "http": 200,
+    "status": "COMPLETED",
+    "passed": true,
+    "seconds": 6.8
+  },
+  {
+    "path": "/api/backboard/memories/add",
+    "http": 201,
+    "status": "ok",
+    "passed": true,
+    "seconds": 1.8
+  },
+  {
+    "path": "/api/backboard/memories/list",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 0.9
+  },
+  {
+    "path": "/api/backboard/memories/search",
+    "http": 200,
+    "status": "ok",
+    "passed": true,
+    "seconds": 1.3
+  }
+]
