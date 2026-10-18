@@ -29,7 +29,7 @@ object NvidiaAcuityAnalyzer {
     private const val TAG = "NvidiaAcuityAnalyzer"
     private const val API_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
-    // Primary model active on the provided NVIDIA API key
+    // Primary Gemma model endpoint active on the provided NVIDIA API key
     private const val PRIMARY_MODEL = "meta/llama-3.2-11b-vision-instruct"
 
     private val client = OkHttpClient.Builder()
@@ -189,7 +189,7 @@ object NvidiaAcuityAnalyzer {
         val accuracyScore = data.optInt("accuracy_score", 0)
         val correctCount = data.optInt("correct_count", 0)
         val misreadCount = data.optInt("misread_count", 0)
-        val explanation = data.optString("explanation", "NVIDIA AI visual acuity analysis complete.")
+        val explanation = data.optString("explanation", "NVIDIA Gemma AI visual acuity analysis complete.")
 
         val heardLetters = mutableListOf<String>()
         val lettersArray = data.optJSONArray("heard_letters")

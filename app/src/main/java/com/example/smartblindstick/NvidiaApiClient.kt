@@ -18,8 +18,8 @@ class NvidiaApiClient {
         .readTimeout(10, TimeUnit.SECONDS)
         .writeTimeout(10, TimeUnit.SECONDS)
         .build()
-    // API key read from BuildConfig (set in local.properties)
-    private val API_KEY = BuildConfig.NVIDIA_API_KEY
+    // API key read from BuildConfig (set in app/src/.env or local.properties)
+    private val API_KEY = BuildConfig.NVIDIA_GEMMA_API_KEY.ifEmpty { BuildConfig.NVIDIA_API_KEY }
     private val API_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
     fun generateResponse(image: Bitmap, prompt: String, onResponse: (String?) -> Unit) {

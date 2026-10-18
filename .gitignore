@@ -16,5 +16,7 @@ local.properties
 .env
 *.env
 app/.env
+app/src/.env
+**/.env
 .kotlin/
 .agents/

@@ -101,7 +101,7 @@ graph TD
 | **Language** | Kotlin |
 | **UI** | Jetpack Compose |
 | **Offline AI** | TensorFlow Lite, Google ML Kit |
-| **Online AI** | Nvidia / Meta LLaMA |
+| **Online AI** | NVIDIA Gemma AI Engine |
 | **Database** | Room (SQLite) |
 
 ---

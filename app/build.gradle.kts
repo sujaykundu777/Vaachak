@@ -32,6 +32,10 @@ android {
         if (envFile.exists()) {
             envFile.inputStream().use { envProperties.load(it) }
         }
+        val srcEnvFile = file("src/.env")
+        if (srcEnvFile.exists()) {
+            srcEnvFile.inputStream().use { envProperties.load(it) }
+        }
 
         val gemmaKey = envProperties.getProperty("NVIDIA_GEMMA_API_KEY")
             ?: localProperties.getProperty("NVIDIA_GEMMA_API_KEY")
