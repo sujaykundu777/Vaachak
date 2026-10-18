@@ -20,13 +20,26 @@ from typing import List, Optional
 import httpx
 from fastapi import Body, FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-GOOGLE_API_KEY: str | None = None  # set via env in production / .env file
-SARVAM_API_KEY: str | None = None
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parent / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    GOOGLE_API_KEY: str | None = None
+    SARVAM_API_KEY: str | None = None
+
+
+settings = Settings()
+GOOGLE_API_KEY: str | None = settings.GOOGLE_API_KEY
+SARVAM_API_KEY: str | None = settings.SARVAM_API_KEY
 
 
 class GeminiRequest(BaseModel):
