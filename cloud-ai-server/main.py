@@ -193,7 +193,7 @@ async def transcribe_audio(file: UploadFile = File(...), model: str = "sarvam-2b
         tmp_path = tmp.name
 
     headers = {"API-Key": SARVAM_API_KEY, "Accept": "application/json"}
-    files = {("audio_file", (file.filename or "upload.audio"), None, Path(tmp_path).read_bytes())}
+    files = {"file": (file.filename or "upload.audio", content, file.content_type or "application/octet-stream")}
 
     try:
         async with httpx.AsyncClient(timeout=120) as client:
@@ -289,7 +289,7 @@ async def voice_first(
         tmp_path = tmp.name
 
     stt_headers = {"API-Key": SARVAM_API_KEY, "Accept": "application/json"}
-    stt_files = {("audio_file", (audio_file.filename or "voice.audio"), None, Path(tmp_path).read_bytes())}
+    stt_files = {"file": (audio_file.filename or "voice.audio", content, audio_file.content_type or "application/octet-stream")}
 
     final_text: str = ""
     try:
