@@ -48,4 +48,15 @@ Gemma API Docs
 Gemma Beginner Guide
 [Step-by-step introduction for new developers](https://mlh.link/gemma-beginnerguide)
 
+[Using Gemma Model with Gemini](https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api)
 
+
+### Open source Tools we are using 
+
+-> OpenCode -> For Code Generation
+-> OpenDesign -> For Design Generation 
+-> Ollama -> For hosting local Gemma Models
+
+For coding 
+
+We are using OpenCode with Qwen 3.6:latest model locally
