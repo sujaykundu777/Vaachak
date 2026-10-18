@@ -37,16 +37,20 @@ android {
             srcEnvFile.inputStream().use { envProperties.load(it) }
         }
 
-        val gemmaKey = envProperties.getProperty("NVIDIA_GEMMA_API_KEY")
+        val resolvedNvidiaKey = envProperties.getProperty("NVIDIA_API_KEY")
+            ?: localProperties.getProperty("NVIDIA_API_KEY")
+            ?: envProperties.getProperty("NVIDIA_LLAMA_API_KEY")
+            ?: localProperties.getProperty("NVIDIA_LLAMA_API_KEY")
+            ?: envProperties.getProperty("NVIDIA_GEMMA_API_KEY")
             ?: localProperties.getProperty("NVIDIA_GEMMA_API_KEY")
-            ?: envProperties.getProperty("NVIDIA_API_KEY")
-            ?: localProperties.getProperty("NVIDIA_API_KEY", "")
+            ?: ""
 
         buildConfigField("String", "TELEGRAM_BOT_TOKEN", "\"${localProperties.getProperty("TELEGRAM_BOT_TOKEN", "")}\"")
         buildConfigField("String", "TELEGRAM_CHAT_ID", "\"${localProperties.getProperty("TELEGRAM_CHAT_ID", "")}\"")
-        buildConfigField("String", "NVIDIA_API_KEY", "\"${localProperties.getProperty("NVIDIA_API_KEY", "")}\"")
+        buildConfigField("String", "NVIDIA_API_KEY", "\"${resolvedNvidiaKey}\"")
+        buildConfigField("String", "NVIDIA_LLAMA_API_KEY", "\"${resolvedNvidiaKey}\"")
         buildConfigField("String", "NVIDIA_META_API_KEY", "\"${localProperties.getProperty("NVIDIA_META_API_KEY", "")}\"")
-        buildConfigField("String", "NVIDIA_GEMMA_API_KEY", "\"${gemmaKey}\"")
+        buildConfigField("String", "NVIDIA_GEMMA_API_KEY", "\"${resolvedNvidiaKey}\"")
     }
 
     buildTypes {

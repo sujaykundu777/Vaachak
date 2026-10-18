@@ -101,7 +101,7 @@ graph TD
 | **Language** | Kotlin |
 | **UI** | Jetpack Compose |
 | **Offline AI** | TensorFlow Lite, Google ML Kit |
-| **Online AI** | NVIDIA Gemma AI Engine |
+| **Online AI** | NVIDIA AI Engine (`meta/llama-3.2-11b-vision-instruct`) |
 | **Database** | Room (SQLite) |
 
 ---
@@ -111,11 +111,12 @@ graph TD
 1. **Download** this code to your computer.
 2. Open it in **Android Studio**.
 3. Let it finish loading.
-4. Create a `local.properties` file in the root directory (if it doesn't exist) and add your API keys:
+4. Add your API keys either in `app/src/.env` or in a `local.properties` file in the root directory:
    ```properties
    TELEGRAM_BOT_TOKEN=your_telegram_bot_token
    TELEGRAM_CHAT_ID=your_telegram_chat_id
    NVIDIA_API_KEY=your_nvidia_api_key
+   NVIDIA_LLAMA_API_KEY=your_nvidia_llama_api_key
    NVIDIA_META_API_KEY=your_nvidia_meta_api_key
    ```
 5. **Run** it on a real Android phone (the camera and sensors won't work properly on an emulator).
