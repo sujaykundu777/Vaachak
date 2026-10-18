@@ -2,6 +2,17 @@
 
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen) ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white) ![Powered by](https://img.shields.io/badge/Powered_by-AI-blue)
 
+
+As part of Hacktoberfest 2026 x Kraftcrowd Hackathon we are building a Offline first Web App + Android App that uses open source gemma models locally 
+
+#### PRESENTATION
+
+https://docs.google.com/presentation/d/11WM5la02aXDbEHukz5thxk6YvKBBeb10_8SE1YJAPOo/edit?usp=sharing
+
+### DEMO VIDEO
+
+
+
 A smart, voice-controlled Android app that helps visually impaired people navigate their surroundings safely. It acts as an intelligent assistant that can "see" objects, warn about obstacles, and guide the user.
 
 ---
@@ -149,4 +160,24 @@ As part of **Hacktoberfest 2026 x Kraftcrowd Hackathon**, **Vaachak** is built a
 * [Gemma Quickstart](https://mlh.link/gemma-quickstart)
 * [Gemma API Documentation](https://mlh.link/gemma-docs)
 * [Gemma Beginner Guide](https://mlh.link/gemma-beginnerguide)
+[Using Gemma Model with Gemini](https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api)
+
+
+### Open source Tools we are using 
+
+-> OpenCode -> For Code Generation
+-> OpenDesign -> For Design Generation 
+-> Ollama -> For hosting local Gemma Models
+
+For coding 
+
+We are using OpenCode with Qwen 3.6:latest model locally
+
+
+MCP Servers Used:
+
+https://devrelay.com
+https://github.com/github/github-mcp-server
+
+ARMORIQ
 

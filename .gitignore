@@ -20,3 +20,6 @@ app/src/.env
 **/.env
 .kotlin/
 .agents/
+opencode.json
+.env
+.venv
