@@ -33,9 +33,11 @@ fun ApiPlaygroundScreen(onBack: () -> Unit) {
     val api = remember { VaachakApi() }
     val scope = rememberCoroutineScope()
     val preferences = remember { context.getSharedPreferences("vaachak_api_ids", 0) }
-    var selected by rememberSaveable { mutableIntStateOf(endpoints.lastIndex) }
+    var selected by rememberSaveable { mutableIntStateOf(endpoints.indexOfFirst { it.path == "/api/health" }) }
     val endpoint = endpoints[selected]
     var menu by remember { mutableStateOf(false) }
+    var modelMenu by remember { mutableStateOf(false) }
+    var models by remember { mutableStateOf<List<String>>(emptyList()) }
     var body by rememberSaveable { mutableStateOf(endpoint.template) }
     var userId by rememberSaveable { mutableStateOf(preferences.getString("user", "").orEmpty()) }
     var conversationId by rememberSaveable { mutableStateOf(preferences.getString("conversation", "").orEmpty()) }
@@ -82,7 +84,9 @@ fun ApiPlaygroundScreen(onBack: () -> Unit) {
         TextButton(onClick = onBack) { Text("Back to Vaachak") }
         Text("Vaachak API Playground", style = MaterialTheme.typography.headlineSmall)
         Text(BuildConfig.VAACHAK_API_URL, style = MaterialTheme.typography.bodySmall)
-        Text("Test cloud AI, speech, memory and database calls. Ollama is local-only and is not available on this Render service.")
+        Text(if (BuildConfig.USE_FRONTEND_PROXY)
+            "Connected through the Next.js frontend. Cloud APIs use its configured backend; Ollama runs on your Mac."
+            else "Test cloud AI, speech, memory and database calls. Ollama is available in the frontend build variant.")
         Box {
             OutlinedButton(onClick = { menu = true }, enabled = !busy) { Text(endpoint.title) }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }, modifier = Modifier.heightIn(max = 400.dp)) {
@@ -107,6 +111,37 @@ fun ApiPlaygroundScreen(onBack: () -> Unit) {
             OutlinedTextField(operationId, { operationId = it.trim() }, label = { Text("Operation ID") }, enabled = !busy, modifier = Modifier.fillMaxWidth())
             Text("Memory message creates an assistant and thread when IDs are empty. Set send_to_llm to \"true\" for an AI reply, or \"false\" to store context only.")
             TextButton(onClick = { threadId = "" }, enabled = !busy) { Text("New thread (keep assistant memory)") }
+        }
+        if (endpoint.path.startsWith("/api/ollama/") && endpoint.method == "POST") {
+            OutlinedButton(enabled = !busy, onClick = {
+                busy = true
+                scope.launch {
+                    try {
+                        val response = api.execute(api.request("/api/ollama/tags"))
+                        models = response.json.getAsJsonArray("models")?.mapNotNull {
+                            it.asJsonObject.get("name")?.asString
+                        }.orEmpty()
+                        modelMenu = models.isNotEmpty()
+                        if (models.isEmpty()) output = "No local models installed. Pull a model in Ollama on your Mac."
+                    } catch (e: CancellationException) { throw e }
+                    catch (e: Exception) { output = e.message ?: "Cannot load models" }
+                    finally { busy = false }
+                }
+            }) { Text("Load and choose local model") }
+            Box {
+                DropdownMenu(expanded = modelMenu, onDismissRequest = { modelMenu = false }) {
+                    models.forEach { model ->
+                        DropdownMenuItem(text = { Text(model) }, onClick = {
+                            try {
+                                val json = JsonParser.parseString(body).asJsonObject
+                                json.addProperty("model", model)
+                                body = GsonBuilder().setPrettyPrinting().create().toJson(json)
+                            } catch (_: Exception) { output = "Fix the request JSON before choosing a model." }
+                            modelMenu = false
+                        })
+                    }
+                }
+            }
         }
         if (endpoint.method != "GET" && endpoint.path != "/api/voice-first" && !endpoint.path.startsWith("/api/sarvam/transcribe")) {
             OutlinedTextField(body, { body = it }, label = { Text(if (endpoint.upload == "image") "Image options (JSON)" else "Request JSON") },

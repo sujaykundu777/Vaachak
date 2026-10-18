@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 150;
+export const maxDuration = 240;
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
   const endpoint = path.join('/');
-  if (!((['health', 'backboard/status'].includes(endpoint) && request.method === 'GET') || (['sarvam/transcribe', 'sarvam/tts', 'gemini/generateContent', 'gemini/chat', 'gemini/imageToText', 'backboard/message', 'backboard/memories/list', 'backboard/memories/add', 'backboard/memories/search', 'backboard/operation'].includes(endpoint) && request.method === 'POST'))) {
+  if (!((['health', 'backboard/status'].includes(endpoint) && request.method === 'GET') || (['voice-first', 'sarvam/transcribe', 'sarvam/tts', 'gemini/generateContent', 'gemini/chat', 'gemini/imageToText', 'backboard/message', 'backboard/memories/list', 'backboard/memories/add', 'backboard/memories/search', 'backboard/operation'].includes(endpoint) && request.method === 'POST'))) {
     return Response.json({ detail: 'Unsupported endpoint or method' }, { status: 404 });
   }
   try {
@@ -21,7 +21,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     const upstream = await fetch(url, {
       method: request.method, headers, cache: 'no-store',
       body: request.method === 'POST' ? await request.arrayBuffer() : undefined,
-      signal: AbortSignal.timeout(135_000),
+      signal: AbortSignal.any([request.signal, AbortSignal.timeout(225_000)]),
     });
     return new Response(upstream.body, { status: upstream.status, headers: { 'content-type': upstream.headers.get('content-type') || 'application/json', 'cache-control': 'no-store' } });
   } catch (error) {

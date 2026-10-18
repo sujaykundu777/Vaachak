@@ -30,6 +30,8 @@ data class ApiResult(val code: Int, val json: JsonObject) {
         val data = json.get("data")?.takeIf { it.isJsonObject }?.asJsonObject
         return listOf("generated_text", "response", "gemini_response", "transcript")
             .firstNotNullOfOrNull { data?.get(it)?.takeIf { v -> v.isJsonPrimitive }?.asString }
+            ?: json.get("response")?.takeIf { it.isJsonPrimitive }?.asString
+            ?: json.get("message")?.takeIf { it.isJsonObject }?.asJsonObject?.get("content")?.takeIf { it.isJsonPrimitive }?.asString
             ?: json.get("text")?.takeIf { it.isJsonPrimitive }?.asString ?: ""
     }
 }
@@ -37,14 +39,24 @@ data class ApiResult(val code: Int, val json: JsonObject) {
 /** One backend client; provider credentials never belong in the APK. */
 class VaachakApi(
     baseUrl: String = BuildConfig.VAACHAK_API_URL,
-    private val client: OkHttpClient = sharedClient
+    private val client: OkHttpClient = sharedClient,
+    private val useFrontend: Boolean = BuildConfig.USE_FRONTEND_PROXY
 ) {
     private val base = baseUrl.toHttpUrl()
-    init { require(base.isHttps || base.host in listOf("localhost", "127.0.0.1")) }
+    private val readClient = client.newBuilder().retryOnConnectionFailure(true).build()
+    init { require(base.isHttps || base.host in listOf("localhost", "127.0.0.1", "10.0.2.2")) }
 
     fun request(path: String, method: String = "GET", body: RequestBody? = null): Request {
         require(path.startsWith("/api/") && !path.contains("..") && !path.contains("#"))
-        val url = requireNotNull(base.resolve(path))
+        val routedPath = if (!useFrontend) {
+            require(!path.startsWith("/api/ollama/")) { "Ollama requires the frontend build variant" }
+            path
+        } else when {
+            path.startsWith("/api/db/") -> path.replaceFirst("/api/db/", "/api/database/")
+            path.startsWith("/api/ollama/") -> path
+            else -> path.replaceFirst("/api/", "/api/backend/")
+        }
+        val url = requireNotNull(base.resolve(routedPath))
         require(url.host == base.host)
         return Request.Builder().url(url).header("Accept", "application/json")
             .method(method, body).build()
@@ -66,7 +78,7 @@ class VaachakApi(
 
     fun enqueue(request: Request, callback: (Result<ApiResult>) -> Unit): Call {
         val start = System.nanoTime()
-        val call = client.newCall(request)
+        val call = (if (request.method == "GET") readClient else client).newCall(request)
         fun finish(result: Result<ApiResult>) {
             val status = result.fold({ "${it.code} ${it.status}" }, {
                 if (call.isCanceled()) "cancelled" else if (it is ApiFailure) "${it.statusCode} error" else "network error"

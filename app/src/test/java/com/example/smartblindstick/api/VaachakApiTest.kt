@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 class VaachakApiTest {
     private lateinit var server: MockWebServer
     private lateinit var api: VaachakApi
-    @Before fun setup() { server = MockWebServer(); server.start(); api = VaachakApi(server.url("/").toString()); ApiJourney.clear() }
+    @Before fun setup() { server = MockWebServer(); server.start(); api = VaachakApi(server.url("/").toString(), useFrontend = false); ApiJourney.clear() }
     @After fun close() { server.shutdown() }
 
     @Test fun generateUsesBackendContract() = runBlocking {
@@ -65,6 +65,21 @@ class VaachakApiTest {
         job.cancelAndJoin()
         assertTrue(job.isCancelled)
     }
+    @Test fun frontendRoutesMatchNextProxiesAndPreserveQueries() {
+        val proxy = VaachakApi(server.url("/").toString(), useFrontend = true)
+        assertEquals("/api/backend/health", proxy.request("/api/health").url.encodedPath)
+        assertEquals("/api/database/users", proxy.request("/api/db/users").url.encodedPath)
+        assertEquals("/api/ollama/tags", proxy.request("/api/ollama/tags").url.encodedPath)
+        val speech = proxy.uploadRequest("/api/sarvam/transcribe?model=saaras:v3&source_language=unknown", byteArrayOf(1), "audio/wav")
+        assertEquals("/api/backend/sarvam/transcribe", speech.url.encodedPath)
+        assertEquals("saaras:v3", speech.url.queryParameter("model"))
+        val voice = proxy.uploadRequest("/api/voice-first", byteArrayOf(1), "audio/wav")
+        assertEquals("/api/backend/voice-first", voice.url.encodedPath)
+        val buffer = okio.Buffer(); voice.body!!.writeTo(buffer)
+        assertTrue(buffer.readUtf8().contains("name=\"audio_file\""))
+        assertThrows(IllegalArgumentException::class.java) { api.request("/api/ollama/tags") }
+    }
+
     @Test fun journeyIsBounded() {
         repeat(150) { ApiJourney.record(ApiEvent("GET", "/api/health", "200", 2)) }
         assertEquals(100, ApiJourney.history.value.size)

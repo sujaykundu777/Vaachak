@@ -42,12 +42,23 @@ android {
             ?: "https://vaachakfastapibackend.onrender.com/"
         require(backendUrl.startsWith("https://")) { "VAACHAK_API_URL must use HTTPS" }
         buildConfigField("String", "VAACHAK_API_URL", "\"${backendUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
+        buildConfigField("boolean", "USE_FRONTEND_PROXY", "false")
         buildConfigField("String", "TELEGRAM_BOT_TOKEN", "\"${localProperties.getProperty("TELEGRAM_BOT_TOKEN", "")}\"")
         buildConfigField("String", "TELEGRAM_CHAT_ID", "\"${localProperties.getProperty("TELEGRAM_CHAT_ID", "")}\"")
 
     }
 
     buildTypes {
+        create("frontend") {
+            initWith(getByName("debug"))
+            matchingFallbacks += listOf("debug")
+            applicationIdSuffix = ".frontend"
+            versionNameSuffix = "-frontend"
+            val frontendUrl = providers.gradleProperty("vaachakFrontendUrl").getOrElse("http://10.0.2.2:3000/")
+            require(frontendUrl.startsWith("https://") || frontendUrl.startsWith("http://10.0.2.2:") || frontendUrl.startsWith("http://127.0.0.1:"))
+            buildConfigField("String", "VAACHAK_API_URL", "\"${frontendUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
+            buildConfigField("boolean", "USE_FRONTEND_PROXY", "true")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

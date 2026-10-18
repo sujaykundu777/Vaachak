@@ -2,7 +2,7 @@ package com.example.smartblindstick.api
 
 data class Endpoint(val title: String, val method: String, val path: String, val template: String, val upload: String = "")
 
-val endpoints = listOf(
+private val cloudEndpoints = listOf(
     Endpoint("Memory status", "GET", "/api/backboard/status", """{}""", ""),
     Endpoint("Memory message / store context", "POST", "/api/backboard/message", """{
   "content": "I prefer short answers in Hindi.",
@@ -76,3 +76,10 @@ val endpoints = listOf(
     Endpoint("Voice \u2192 text \u2192 AI", "POST", "/api/voice-first", """{}""", "audio"),
     Endpoint("Health", "GET", "/api/health", """{}""", "")
 )
+
+val endpoints = cloudEndpoints + if (com.example.smartblindstick.BuildConfig.USE_FRONTEND_PROXY) listOf(
+    Endpoint("Ollama models", "GET", "/api/ollama/tags", "{}"),
+    Endpoint("Ollama generate", "POST", "/api/ollama/generate", """{"model":"","prompt":"Hello from Android","stream":false}"""),
+    Endpoint("Ollama chat", "POST", "/api/ollama/chat", """{"model":"","messages":[{"role":"user","content":"Hello from Android"}],"stream":false}"""),
+    Endpoint("Ollama embeddings", "POST", "/api/ollama/embed", """{"model":"","input":"Vaachak Android"}""")
+) else emptyList()

@@ -196,3 +196,27 @@ Open **Help → Open Cloud API Playground** for all deployed API operations. Sel
 - The current database routes use backend service credentials and have no user authentication. The playground is for integration testing; selected UUIDs do not establish an authenticated identity.
 
 Validation: `./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug` with Android SDK 35 and Java 17. API transport tests use MockWebServer for response envelopes, multipart names, HTTP/semantic errors, cancellation, and logs. No cloud keys are needed for these unit tests. Live validation results are in `render-test-results.json`; labeled synthetic test records are retained for inspection.
+
+## Android Studio: connect to the Next.js frontend
+
+Open this repository root in Android Studio, sync Gradle, then choose **app → frontend** in Build Variants and run it on the emulator. The separately installed **Vaachak Frontend** app uses `http://10.0.2.2:3000/` (the emulator's alias for your Mac). Start the existing `cloud-ai-client` with `npm run dev` first.
+
+Routing: `/api/gemini/*`, `/api/sarvam/*`, `/api/backboard/*`, `/api/health`, and `/api/voice-first` go through `/api/backend/*`; `/api/db/*` maps to `/api/database/*`; Ollama uses `/api/ollama/*`. Next.js's `VAACHAK_API_URL` controls whether cloud/database requests go to your local Python server or Render. `OLLAMA_API_URL` controls the local Ollama server. Provider credentials stay server-side.
+
+In **Help → Open Cloud API Playground**, the frontend variant adds Ollama models, generation, chat, and embeddings. Use **Load and choose local model** before sending an Ollama request. Android requests appear in the Android session journey; the web Logs page records only browser-originated requests.
+
+The normal **debug** variant still calls Render directly. Local HTTP is allowed only for loopback/emulator addresses in the frontend variant; release security is unchanged. For a USB phone, run `adb reverse tcp:3000 tcp:3000` and build with `-PvaachakFrontendUrl=http://127.0.0.1:3000/`.
+
+Frontend validation: `./gradlew :app:assembleFrontend :app:testFrontendUnitTest :app:lintFrontend`. APK: `app/build/outputs/apk/frontend/app-frontend.apk`.
+
+### Live Render tests on Android
+
+The `app/src/androidTest` suite includes opt-in tests using the real Android client against Render: text/chat, generated test-image OCR, TTS → STT → voice-first, database preferences/conversation persistence, Backboard memory APIs, and Compose UI navigation to a successful Render health response.
+
+Run from Android Studio's project terminal with an emulator connected:
+
+```sh
+./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.liveRender=true
+```
+
+These tests make small real provider requests and create labeled synthetic database and memory records. Without `liveRender=true`, the live tests are skipped. The regular `debug` APK connects directly to Render; `frontend` is the separate local Next.js integration build.
