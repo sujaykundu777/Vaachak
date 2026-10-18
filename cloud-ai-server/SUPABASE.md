@@ -60,3 +60,9 @@ python -m unittest discover -s tests -v
 ```
 
 The API tests mock PostgREST and verify scoped queries, credentials, ordering, upserts, validation and error mappings. Full persistence testing needs the migration applied to your Supabase project.
+
+## Local Supabase
+
+For a local Supabase API gateway on port 54321, use `SUPABASE_URL=http://127.0.0.1:54321` when Python runs on the host. When Python runs inside the existing Docker container on macOS, use `SUPABASE_URL=http://host.docker.internal:54321`. Use the local instance's server secret/service-role key, not a hosted project key. Keep those values only in `.env`.
+
+The Vaachak migration uses `vaachak_*` table/function names so it can coexist with other apps in a local Supabase database. The local gateway, schema, preference save/load and ordered two-message conversation flow were verified through the frontend. The Log Playground at `/logs` can capture those UI calls as a named journey; log entries are browser memory and are not written to these tables.

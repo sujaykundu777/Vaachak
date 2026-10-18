@@ -72,3 +72,20 @@ Open `/database`. The Python backend needs `SUPABASE_URL` and `SUPABASE_SECRET_K
 Create/select an app test user, save/load reading preferences, create/list conversations, append role-tagged messages, and load ordered history. Supports pagination and a request/response inspector. The proxy exposes only the supported database paths and GET/POST/PUT methods. The Python router uses existing httpx to reach Supabase's REST Data API.
 
 This is a local admin playground, separate from Supabase Auth. The other playgrounds do not automatically persist their messages or settings here. Backend `SUPABASE.md` documents APIs, schema, setup, access limitations, and example payloads.
+
+## API Log Playground
+
+Open `/logs`. All playground UI requests now use a shared `playgroundFetch` wrapper: Voice (STT/TTS), Gemma (generation/chat/image-to-text), Ollama (models/generation/chat/embeddings), Backboard (messages/memory actions), and Database (user/preferences/conversation/message actions). Automatic readiness checks are included. This is frontend request tracing, not server-wide logging or provider subrequest tracing.
+
+- Start named journeys, navigate using sidebar links, and inspect a chronological timeline. Client-side Next.js links keep the shared in-memory log alive across playgrounds.
+- See action, source page, service, frontend/target API paths, HTTP status, duration, pending/error/partial states and bounded request/response previews.
+- Default capture omits free-text payload fields. Optional text previews apply to future requests and may include personal content. Headers are never captured. Known credential fields/token patterns are redacted before log storage; uploaded bytes, base64 media, and embedding vectors are omitted. Bodies over 32 KiB are summarized and large/deep structures are capped. Redaction cannot identify every secret embedded in arbitrary prose—review exports before sharing.
+- Logs are browser memory only, capped at 200 calls, and clear on reload. No localStorage, Supabase, external logging provider or automatic export is used. Calls before the new instrumentation loads cannot be reconstructed.
+- Pause/resume new captures, filter by journey/service/status or search endpoint/action/source, inspect a call, export the filtered redacted JSON, or clear logs. Clearing does not cancel requests or delete application/provider records. In-flight calls finish in their original journey. Summed request time is not wall-clock journey duration.
+- Complete JSON responses containing `status: error`/`FAILED` are classified as failed even with HTTP 200; partial/action-required/in-progress statuses are distinguished. Large omitted responses cannot be inspected for semantic errors.
+
+```sh
+npm run test:logs
+```
+
+The focused logger suite uses Node.js 22+ TypeScript stripping and tests redaction, file/body limits, response readability, semantic errors, network failures, pause/clear behavior and journey bounds.

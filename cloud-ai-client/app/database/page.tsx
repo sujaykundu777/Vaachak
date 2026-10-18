@@ -1,4 +1,6 @@
 'use client';
+import Link from 'next/link';
+import { playgroundFetch } from '../lib/api-log-store';
 import { useEffect, useRef, useState } from 'react';
 
 type Row = Record<string, unknown>;
@@ -41,7 +43,7 @@ export default function DatabasePlayground() {
     if (pending.current) return;
     pending.current = true; setBusy(true);
     try {
-      const r = await fetch('/api/database/status'); const b = obj(await r.json());
+      const r = await playgroundFetch('/api/database/status'); const b = obj(await r.json());
       setReady(r.ok && b.ready === true);
       setStatus(!r.ok ? text(b.detail || 'Database unavailable') : b.ready === true ? 'Supabase connected' : 'Supabase setup required');
     } catch { setReady(false); setStatus('Backend unavailable. Start the Python server.'); }
@@ -54,7 +56,7 @@ export default function DatabasePlayground() {
     pending.current = true; setBusy(true); setError(''); setNotice('');
     const start = performance.now();
     try {
-      const r = await fetch('/api/database/' + path, { method, headers: request === undefined ? undefined : { 'Content-Type': 'application/json' }, body: request === undefined ? undefined : JSON.stringify(request) });
+      const r = await playgroundFetch('/api/database/' + path, { method, headers: request === undefined ? undefined : { 'Content-Type': 'application/json' }, body: request === undefined ? undefined : JSON.stringify(request) });
       const raw = await r.text(); let body: unknown; try { body = JSON.parse(raw); } catch { body = { detail: raw || 'Empty response' }; }
       setTrace({ method, path, request, response: body, http: r.status, ms: Math.round(performance.now() - start) });
       if (!r.ok) { setError(text(obj(body).detail || body)); return null; }
@@ -101,7 +103,7 @@ export default function DatabasePlayground() {
     } catch (e) { setError(e instanceof Error ? e.message : 'Invalid message'); }
   }
   const enabled = ready && !busy;
-  return <div className="shell"><aside><a className="brand" href="/"><b>व</b>vaachak<span>.</span></a><div className="workspace">DEVELOPER WORKSPACE</div><a className="nav nav-link nav-idle" href="/">◉ &nbsp; Voice playground <span>↗</span></a><a className="nav nav-link nav-idle" href="/gemma">✧ &nbsp; Gemma playground <span>↗</span></a><a className="nav nav-link nav-idle" href="/ollama">◎ &nbsp; Ollama playground <span>↗</span></a><a className="nav nav-link nav-idle" href="/memory">▤ &nbsp; Memory playground <span>↗</span></a><a className="nav nav-link" href="/database" aria-current="page">▦ &nbsp; Database playground <span>↗</span></a><div className="aside-note"><div className="little-wave">▦</div><h3>A place for every conversation.</h3><p>Preferences and message history, stored with Supabase.</p></div><div className="version">VAACHAK DATABASE <span>v0.1</span></div></aside>
+  return <div className="shell"><aside><Link className="brand" href="/"><b>व</b>vaachak<span>.</span></Link><div className="workspace">DEVELOPER WORKSPACE</div><Link className="nav nav-link nav-idle" href="/">◉ &nbsp; Voice playground <span>↗</span></Link><Link className="nav nav-link nav-idle" href="/gemma">✧ &nbsp; Gemma playground <span>↗</span></Link><Link className="nav nav-link nav-idle" href="/ollama">◎ &nbsp; Ollama playground <span>↗</span></Link><Link className="nav nav-link nav-idle" href="/memory">▤ &nbsp; Memory playground <span>↗</span></Link><Link className="nav nav-link" href="/database" aria-current="page">▦ &nbsp; Database playground <span>↗</span></Link><Link className="nav nav-link nav-idle" href="/logs">≋ &nbsp; Log playground <span>↗</span></Link><div className="aside-note"><div className="little-wave">▦</div><h3>A place for every conversation.</h3><p>Preferences and message history, stored with Supabase.</p></div><div className="version">VAACHAK DATABASE <span>v0.1</span></div></aside>
     <main><header><span>Workspace <em>/</em><strong>Database playground</strong></span><button className={`health ${ready ? 'ready' : ''}`} onClick={check} disabled={busy}><i/>{ready ? 'Supabase connected' : 'Check database'} ↻</button></header><div className="page gemma-page"><div className="eyebrow">THE DATA LAB <span>POWERED BY SUPABASE</span></div><h1>Keep the conversation going<span>.</span></h1><p className="intro">Remember how each user likes to read. Store the conversations that follow.<br/>Test preference and conversation APIs against your database.</p>
     {!ready && <div className="connection-error" role="status"><strong>{status}</strong><p>Set SUPABASE_URL and SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) in the Python server’s .env. Run <code>supabase/migrations/001_preferences_conversations.sql</code> in your Supabase SQL editor, restart the backend, then refresh.</p></div>}
     <section className="card session-card"><div className="card-head"><span className="step">01</span><div><h2>Select a playground user</h2><p>These are app test records, separate from Supabase Auth accounts.</p></div></div><div className="session-body"><div className="fields"><label>Display name<input value={name} onChange={e => setName(e.target.value)} maxLength={120} disabled={busy}/></label><label>Saved users<select value={users.some(row => row.id === user) ? user : ''} onChange={e => selectUser(e.target.value)} disabled={!enabled}><option value="">Select a user</option>{users.map(row => <option key={String(row.id)} value={String(row.id)}>{String(row.display_name)} · {String(row.id).slice(0,8)}</option>)}</select></label></div><div className="session-actions"><button className="secondary" onClick={createUser} disabled={!enabled}>Create user</button><button className="secondary" onClick={() => void listUsers(0)} disabled={!enabled}>Load users</button></div><div className="session-actions database-paging"><button className="text-button" disabled={!enabled || userOffset === 0} onClick={() => void listUsers(Math.max(0,userOffset-25))}>← Previous users</button><span>Page {userOffset / 25 + 1}</span><button className="text-button" disabled={!enabled || users.length < 25} onClick={() => void listUsers(userOffset+25)}>Next users →</button></div><p className="field-note">Active user: {user || 'select or create a user'}</p></div></section>

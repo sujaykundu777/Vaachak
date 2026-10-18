@@ -1,4 +1,6 @@
 'use client';
+import Link from 'next/link';
+import { playgroundFetch } from '../lib/api-log-store';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
@@ -41,7 +43,7 @@ export default function OllamaPlayground() {
   async function refreshModels() {
     setLoading(true); setConnectionError('');
     try {
-      const response = await fetch('/api/ollama/tags');
+      const response = await playgroundFetch('/api/ollama/tags');
       const body = object(await response.json());
       if (!response.ok || body.error) throw new Error(message(body.error || 'Could not list Ollama models.'));
       if (!Array.isArray(body.models)) throw new Error('Ollama returned an invalid model list.');
@@ -80,7 +82,7 @@ export default function OllamaPlayground() {
     setValidation(''); setCopyStatus(''); pending.current = true; setBusy(true);
     const start = performance.now();
     try {
-      const response = await fetch(`/api/ollama/${target}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) });
+      const response = await playgroundFetch(`/api/ollama/${target}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) });
       const raw = await response.text(); let body: unknown;
       try { body = JSON.parse(raw); } catch { body = { error: raw || 'Empty Ollama response' }; }
       const data = object(body);
@@ -113,11 +115,11 @@ export default function OllamaPlayground() {
   const rate = typeof response.eval_count === 'number' && typeof response.eval_duration === 'number' && response.eval_duration > 0 ? (response.eval_count / (response.eval_duration / 1e9)).toFixed(1) : null;
 
   return <div className="shell">
-    <aside><a className="brand" href="/"><b>व</b>vaachak<span>.</span></a><div className="workspace">DEVELOPER WORKSPACE</div>
-      <a className="nav nav-link nav-idle" href="/">◉ &nbsp; Voice playground <span>↗</span></a>
-      <a className="nav nav-link nav-idle" href="/gemma">✧ &nbsp; Gemma playground <span>↗</span></a>
-      <a className="nav nav-link" href="/ollama" aria-current="page">◎ &nbsp; Ollama playground <span>↗</span></a>
-      <a className="nav nav-link nav-idle" href="/memory">▤ &nbsp; Memory playground <span>↗</span></a><a className="nav nav-link nav-idle" href="/database">▦ &nbsp; Database playground <span>↗</span></a><div className="aside-note"><div className="little-wave">◎</div><h3>Your models. Your machine.</h3><p>A space to explore local inference with Ollama.</p></div><div className="version">VAACHAK LOCAL AI <span>v0.1</span></div>
+    <aside><Link className="brand" href="/"><b>व</b>vaachak<span>.</span></Link><div className="workspace">DEVELOPER WORKSPACE</div>
+      <Link className="nav nav-link nav-idle" href="/">◉ &nbsp; Voice playground <span>↗</span></Link>
+      <Link className="nav nav-link nav-idle" href="/gemma">✧ &nbsp; Gemma playground <span>↗</span></Link>
+      <Link className="nav nav-link" href="/ollama" aria-current="page">◎ &nbsp; Ollama playground <span>↗</span></Link>
+      <Link className="nav nav-link nav-idle" href="/memory">▤ &nbsp; Memory playground <span>↗</span></Link><Link className="nav nav-link nav-idle" href="/database">▦ &nbsp; Database playground <span>↗</span></Link><Link className="nav nav-link nav-idle" href="/logs">≋ &nbsp; Log playground <span>↗</span></Link><div className="aside-note"><div className="little-wave">◎</div><h3>Your models. Your machine.</h3><p>A space to explore local inference with Ollama.</p></div><div className="version">VAACHAK LOCAL AI <span>v0.1</span></div>
     </aside>
     <main><header><span>Workspace <em>/</em><strong>Ollama playground</strong></span><button className={`health ${!connectionError && !loading ? 'ready' : ''}`} onClick={refreshModels} disabled={loading || busy || history.length > 0}><i/>{loading ? 'Connecting…' : connectionError ? 'Ollama unavailable' : `${models.length} models available`} ↻</button></header>
       <div className="page gemma-page"><div className="eyebrow">THE LOCAL AI LAB <span>POWERED BY OLLAMA</span></div><h1>A playground closer to home<span>.</span></h1><p className="intro">Choose an installed model. Try a prompt, a conversation, or an embedding.<br/>Test Ollama’s native APIs through your local frontend.</p>
