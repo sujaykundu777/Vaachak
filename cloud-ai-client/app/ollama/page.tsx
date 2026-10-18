@@ -117,7 +117,7 @@ export default function OllamaPlayground() {
       <a className="nav nav-link nav-idle" href="/">◉ &nbsp; Voice playground <span>↗</span></a>
       <a className="nav nav-link nav-idle" href="/gemma">✧ &nbsp; Gemma playground <span>↗</span></a>
       <a className="nav nav-link" href="/ollama" aria-current="page">◎ &nbsp; Ollama playground <span>↗</span></a>
-      <div className="aside-note"><div className="little-wave">◎</div><h3>Your models. Your machine.</h3><p>A space to explore local inference with Ollama.</p></div><div className="version">VAACHAK LOCAL AI <span>v0.1</span></div>
+      <a className="nav nav-link nav-idle" href="/memory">▤ &nbsp; Memory playground <span>↗</span></a><div className="aside-note"><div className="little-wave">◎</div><h3>Your models. Your machine.</h3><p>A space to explore local inference with Ollama.</p></div><div className="version">VAACHAK LOCAL AI <span>v0.1</span></div>
     </aside>
     <main><header><span>Workspace <em>/</em><strong>Ollama playground</strong></span><button className={`health ${!connectionError && !loading ? 'ready' : ''}`} onClick={refreshModels} disabled={loading || busy || history.length > 0}><i/>{loading ? 'Connecting…' : connectionError ? 'Ollama unavailable' : `${models.length} models available`} ↻</button></header>
       <div className="page gemma-page"><div className="eyebrow">THE LOCAL AI LAB <span>POWERED BY OLLAMA</span></div><h1>A playground closer to home<span>.</span></h1><p className="intro">Choose an installed model. Try a prompt, a conversation, or an embedding.<br/>Test Ollama’s native APIs through your local frontend.</p>

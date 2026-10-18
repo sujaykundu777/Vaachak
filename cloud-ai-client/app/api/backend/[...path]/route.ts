@@ -5,7 +5,7 @@ export const maxDuration = 150;
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
   const endpoint = path.join('/');
-  if (!((endpoint === 'health' && request.method === 'GET') || (['sarvam/transcribe', 'sarvam/tts', 'gemini/generateContent', 'gemini/chat', 'gemini/imageToText'].includes(endpoint) && request.method === 'POST'))) {
+  if (!((['health', 'backboard/status'].includes(endpoint) && request.method === 'GET') || (['sarvam/transcribe', 'sarvam/tts', 'gemini/generateContent', 'gemini/chat', 'gemini/imageToText', 'backboard/message', 'backboard/memories/list', 'backboard/memories/add', 'backboard/memories/search', 'backboard/operation'].includes(endpoint) && request.method === 'POST'))) {
     return Response.json({ detail: 'Unsupported endpoint or method' }, { status: 404 });
   }
   try {

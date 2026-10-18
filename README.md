@@ -1,6 +1,14 @@
 # Vaachak
 
-As part of Hacktoberfest 2026 x Kraftcrowd Hackathon we are building a Offline first Web App + Android App that uses open source gemma models locally
+As part of Hacktoberfest 2026 x Kraftcrowd Hackathon we are building a Offline first Web App + Android App that uses open source gemma models locally 
+
+#### PRESENTATION
+
+https://docs.google.com/presentation/d/11WM5la02aXDbEHukz5thxk6YvKBBeb10_8SE1YJAPOo/edit?usp=sharing
+
+### DEMO VIDEO
+
+
 
 ### Track 1 
 
