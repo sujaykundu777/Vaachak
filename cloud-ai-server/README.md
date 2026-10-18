@@ -58,7 +58,13 @@ A healthy status confirms the server responds, not that provider credentials are
 
  Filter, search, and stream logs from all your Compose services
     in one place with Docker Desktop's Logs view. docker-desktop://dashboard/logs?appId=cloud-ai-server
+
+
+docker compose logs -f api  # View logs
+docker compose down         # Stop
+docker compose up --build -d --wait  # Rebuild and start
 ---
+
 
 ## API Endpoints
 
