@@ -80,6 +80,20 @@ class VaachakApiTest {
         assertThrows(IllegalArgumentException::class.java) { api.request("/api/ollama/tags") }
     }
 
+    @Test fun imageOptionsRejectInvalidValuesWithActionableErrors() {
+        for (json in listOf("""{"prompt":{"nested":"text"}}""", """{"model":["gemma"]}""",
+            """{"prompt":null}""", """{"prompt":42}""", """{"unexpected":"value"}""")) {
+            val error = assertThrows(IllegalArgumentException::class.java) {
+                imageUploadFields(com.google.gson.JsonParser.parseString(json).asJsonObject)
+            }
+            assertTrue(error.message!!.contains("option"))
+        }
+        val fields = imageUploadFields(com.google.gson.JsonParser.parseString("""{"prompt":"Read this","model":"gemma-4-26b-a4b-it"}""").asJsonObject)
+        assertEquals("Read this", fields["prompt"])
+        assertEquals("gemma-4-26b-a4b-it", fields["model"])
+        assertTrue(imageUploadFields(com.google.gson.JsonObject()).isEmpty())
+    }
+
     @Test fun journeyIsBounded() {
         repeat(150) { ApiJourney.record(ApiEvent("GET", "/api/health", "200", 2)) }
         assertEquals(100, ApiJourney.history.value.size)

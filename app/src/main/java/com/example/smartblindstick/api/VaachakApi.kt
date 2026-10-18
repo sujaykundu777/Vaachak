@@ -128,3 +128,10 @@ class VaachakApi(
             .retryOnConnectionFailure(false).build()
     }
 }
+
+/** Validate editable multipart options before building the request. */
+internal fun imageUploadFields(options: JsonObject): Map<String, String> = options.entrySet().associate { (key, value) ->
+    require(key in setOf("prompt", "model")) { "Unknown image option '$key'. Use prompt or model." }
+    require(value.isJsonPrimitive && value.asJsonPrimitive.isString) { "Image option '$key' must be a text string." }
+    key to value.asString
+}

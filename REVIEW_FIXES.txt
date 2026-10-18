@@ -1,0 +1,27 @@
+Review disposition — Android app — 2026-10-18
+Verified against current source; referenced line numbers below are from the supplied review.
+
+FIXED
+1. VaachakMainActivity.kt:237 and :240 (duplicate finding): cloud reading no longer changes the selected inference mode. Text Reader disables the cloud button in Offline Mode, explains how to enable it, and the callback independently checks the mode before queuing an upload.
+2. ApiPlaygroundScreen.kt:142: editable image options now accept only string prompt/model fields. Null, nested objects, arrays, numbers and unknown fields receive explicit validation errors before upload.
+3. MetaApiClient.kt:12 (partially valid): restored a safe failure diagnostic using only the exception type. Cancellation still propagates. The asserted missing timeout was incorrect: VaachakApi already has bounded connection/read/write/call timeouts and journey logging.
+4. app/build.gradle.kts:43 (partially valid): invalid backend URL errors now identify the supplying configuration file and explain how to use the local frontend variant. HTTPS remains required for the direct backend profile; silently falling back to a different server would send data to an unintended backend. README now documents HTTPS and configuration precedence.
+
+SKIPPED — NOT REPRODUCIBLE / INCORRECT PREMISE
+5. NvidiaAcuityAnalyzer.kt:37: invokeOnCancellation immediately invokes a newly registered handler if the continuation was already cancelled; it also handles cancellation after resume but before dispatch. The existing isActive guard and cancellable continuation do not have the alleged late-registration leak. Kotlin reference: https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-cancellable-continuation/invoke-on-cancellation.html
+6. NvidiaAcuityAnalyzer.kt:106: the caller uses result.getOrNull()?.text() before parseAiResponse. ApiResult.text extracts data.generated_text, matching the actual backend envelope. The parser is already receiving model content, not the HTTP envelope.
+7. VaachakMainActivity.kt:204: VisionProcessor.processImageProxy explicitly calls imageProxy.close(). Adding another close in this branch would duplicate ownership.
+8. VaachakApi.kt:28: the integrated backend uses HTTP failures and error/FAILED statuses. The alleged success:false contract is not present. Status-less successful Supabase and Ollama responses are valid; no speculative response contract was added.
+9. VaachakApi.kt:60: FastAPI defines image/STT multipart fields as file and voice-first as audio_file. The client matches those declarations; live Android integration tests previously exercised all three.
+10. VaachakApi.kt:110: GeminiRequest.model has DEFAULT_GEMINI_MODEL as its default. The endpoint template supplies an example, not a required-field specification. Sending only prompt is valid.
+11. README.md:133: file(".env") executes in the Gradle app subproject, so it resolves to app/.env. The documented path was correct. Documentation was clarified for precedence as part of item 4.
+12. ApiPlaygroundScreen.kt:126: canonical-format validation intentionally rejects abbreviated UUID forms. Uppercase canonical UUIDs are accepted, and FastAPI UUID parameters normalize them before database queries. They do not select a different record.
+13. AssistiveScreens.kt:136: the Help button's "API Playground" key exactly matches the VaachakMainActivity when branch, and the emulator UI test verifies navigation.
+14. Endpoints.kt:3: ApiPlaygroundScreen replaces {user_id} and {conversation_id} with validated IDs before constructing the request. Those placeholders are in endpoint paths, not unprocessed JSON body templates.
+
+VALIDATION
+Both debug and frontend APK builds passed.
+18 unit tests passed per variant (36 executions total).
+Two emulator UI tests passed: Render health navigation and Offline Mode / Text Reader persistence.
+Android lint passed.
+Disposable Gradle fixtures verified invalid-URL source diagnostics and precedence for root local.properties, app/.env and app/src/.env.

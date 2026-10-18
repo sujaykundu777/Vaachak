@@ -27,20 +27,28 @@ android {
             localPropertiesFile.inputStream().use { localProperties.load(it) }
         }
 
+        var backendUrlSource = if (localProperties.containsKey("VAACHAK_API_URL")) "root local.properties" else "default"
         val envProperties = Properties()
         val envFile = file(".env")
         if (envFile.exists()) {
             envFile.inputStream().use { envProperties.load(it) }
+            if (envProperties.containsKey("VAACHAK_API_URL")) backendUrlSource = "app/.env"
         }
         val srcEnvFile = file("src/.env")
         if (srcEnvFile.exists()) {
-            srcEnvFile.inputStream().use { envProperties.load(it) }
+            val srcProperties = Properties()
+            srcEnvFile.inputStream().use { srcProperties.load(it) }
+            envProperties.putAll(srcProperties)
+            if (srcProperties.containsKey("VAACHAK_API_URL")) backendUrlSource = "app/src/.env"
         }
 
         val backendUrl = envProperties.getProperty("VAACHAK_API_URL")
             ?: localProperties.getProperty("VAACHAK_API_URL")
             ?: "https://vaachakfastapibackend.onrender.com/"
-        require(backendUrl.startsWith("https://")) { "VAACHAK_API_URL must use HTTPS" }
+        require(backendUrl.startsWith("https://")) {
+            "VAACHAK_API_URL from $backendUrlSource must use HTTPS for the Render build. " +
+                "Update or remove that setting; for local Next.js use the frontend variant with -PvaachakFrontendUrl=http://10.0.2.2:3000/."
+        }
         buildConfigField("String", "VAACHAK_API_URL", "\"${backendUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
         buildConfigField("boolean", "USE_FRONTEND_PROXY", "false")
         buildConfigField("String", "TELEGRAM_BOT_TOKEN", "\"${localProperties.getProperty("TELEGRAM_BOT_TOKEN", "")}\"")
